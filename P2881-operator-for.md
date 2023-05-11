@@ -1,7 +1,7 @@
 ---
 title: "operator for"
 subtitle: "Generator ranges without coroutine overhead"
-document: DXXXX
+document: P2881R0
 date: today
 audience: EWG
 author:
