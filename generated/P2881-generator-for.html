@@ -476,10 +476,9 @@ Generator Range Idiom</a></li>
 <code class="sourceCode default">std::control_flow</code></a></li>
 <li><a href="#generator-based-for-loop" id="toc-generator-based-for-loop"><span class="toc-section-number">4.2</span> Generator-based
 <code class="sourceCode default">for</code> loop</a></li>
-<li><a href="#syntax-sugar-for-sink-calls-optional" id="toc-syntax-sugar-for-sink-calls-optional"><span class="toc-section-number">4.3</span> Syntax sugar for sink calls
-(optional)</a></li>
-<li><a href="#syntax-sugar-for-return-stdcontinue_-optional" id="toc-syntax-sugar-for-return-stdcontinue_-optional"><span class="toc-section-number">4.4</span> Syntax sugar for
-<code class="sourceCode default">return std::continue_</code>
+<li><a href="#relaxing-requirements-for-sink-returns-alternative-design" id="toc-relaxing-requirements-for-sink-returns-alternative-design"><span class="toc-section-number">4.3</span> Relaxing requirements for sink
+returns (alternative design)</a></li>
+<li><a href="#syntax-sugar-for-sink-calls-optional" id="toc-syntax-sugar-for-sink-calls-optional"><span class="toc-section-number">4.4</span> Syntax sugar for sink calls
 (optional)</a></li>
 <li><a href="#stdranges-support-future-paper" id="toc-stdranges-support-future-paper"><span class="toc-section-number">4.5</span>
 <code class="sourceCode default">std::ranges</code> support (future
@@ -523,28 +522,22 @@ be invoked with each element of the range.</p>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>        std<span class="op">::</span>control_flow flow;</span>
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>        <span class="co">// With P2561: sink(1)??;</span></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>        flow <span class="op">=</span> sink<span class="op">(</span><span class="dv">1</span><span class="op">)</span>;</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="op">(!</span>flow<span class="op">)</span> <span class="cf">return</span> flow;</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>        <span class="co">// With P2561: sink(2)??;</span></span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>        flow <span class="op">=</span> sink<span class="op">(</span><span class="dv">2</span><span class="op">)</span>;</span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="op">(!</span>flow<span class="op">)</span> <span class="cf">return</span> flow;</span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>        <span class="co">// With P2561: sink(3)??;</span></span>
-<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>        flow <span class="op">=</span> sink<span class="op">(</span><span class="dv">3</span><span class="op">)</span>;</span>
-<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="op">(!</span>flow<span class="op">)</span> <span class="cf">return</span> flow;</span>
-<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> flow;</span>
-<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
-<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="op">}</span>;</span>
-<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> <span class="op">(</span><span class="dt">int</span> x <span class="op">:</span> generator123<span class="op">())</span></span>
-<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
-<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>    std<span class="op">::</span>print<span class="op">(</span><span class="st">&quot;{}</span><span class="sc">\n</span><span class="st">&quot;</span>, x<span class="op">)</span>;</span>
-<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>x <span class="op">==</span> <span class="dv">2</span><span class="op">)</span></span>
-<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>        <span class="cf">break</span>;</span>
-<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>        flow <span class="op">=</span> sink<span class="op">(</span><span class="dv">1</span><span class="op">)</span>;</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="op">(!</span>flow<span class="op">)</span> <span class="cf">return</span> flow;</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>        flow <span class="op">=</span> sink<span class="op">(</span><span class="dv">2</span><span class="op">)</span>;</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="op">(!</span>flow<span class="op">)</span> <span class="cf">return</span> flow;</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> sink<span class="op">(</span><span class="dv">3</span><span class="op">)</span>;</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="op">}</span>;</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> <span class="op">(</span><span class="dt">int</span> x <span class="op">:</span> generator123<span class="op">())</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>    std<span class="op">::</span>print<span class="op">(</span><span class="st">&quot;{}</span><span class="sc">\n</span><span class="st">&quot;</span>, x<span class="op">)</span>;</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>x <span class="op">==</span> <span class="dv">2</span><span class="op">)</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>        <span class="cf">break</span>;</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <h1 data-number="2" id="motivation"><span class="header-section-number">2</span> Motivation<a href="#motivation" class="self-link"></a></h1>
 <p>For complex ranges, iterators are a bit annoying to write: There is
 an awkward split between returning the value in
@@ -637,11 +630,15 @@ interface it implements, not of coroutines itself.</p>
 <h1 data-number="3" id="generator-range-idiom"><span class="header-section-number">3</span> Generator Range Idiom<a href="#generator-range-idiom" class="self-link"></a></h1>
 <p>In the <a href="https://github.com/think-cell/think-cell-library">think-cell-library</a>,
 this problem is solved using a concept of <em>generator ranges</em>. It
-is even weaker than an input range – it can only be iterated over, and
-once the iteration is stopped, it cannot resume later on. However, if
-all you want is
-<code class="sourceCode default">std::ranges::for_each</code> or similar
-algorithms that require only a single loop, it is enough.</p>
+is in some aspects even weaker than an input range – it can only be
+iterated over, and once the iteration is stopped, it cannot resume later
+on. However, it is enough for algorithms that require only a single
+loop, like
+<code class="sourceCode default">std::ranges::for_each</code>,
+<code class="sourceCode default">std::ranges::copy</code>, or
+<code class="sourceCode default">std::ranges::fold_left</code> (plus
+variants and fold-like algorithms like
+<code class="sourceCode default">std::ranges::any_of</code>).</p>
 <p>A generator ranges is implemented as a type with an overloaded
 <code class="sourceCode default">operator()</code> that takes another
 callable, a sink. It will then use internal iteration invoking the sink
@@ -649,7 +646,7 @@ with each argument. Early exit
 (i.e. <code class="sourceCode default">break</code>) is possible by
 returning <code class="sourceCode default">tc::break_</code> from the
 sink, which the <code class="sourceCode default">operator()</code> then
-detects, stops iteration, and forward the result.</p>
+detects, stops iteration, and forwards the result.</p>
 <p>Range adapters like <code class="sourceCode default">filter()</code>,
 <code class="sourceCode default">join()</code> or
 <code class="sourceCode default">concat()</code> are still easy to
@@ -659,17 +656,20 @@ write:</p>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
 <span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Returned lambda is a generator range.</span></span>
 <span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="op">[=](</span><span class="kw">auto</span> sink<span class="op">)</span> <span class="op">{</span></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> <span class="op">(</span><span class="kw">auto</span><span class="op">&amp;&amp;</span> elem <span class="op">:</span> rng<span class="op">)</span></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> <span class="op">(</span>predicate<span class="op">(</span>elem<span class="op">))</span></span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>            <span class="op">{</span></span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>                <span class="kw">auto</span> result <span class="op">=</span> sink<span class="op">(</span>std<span class="op">::</span>forward<span class="op">&lt;</span><span class="kw">decltype</span><span class="op">(</span>elem<span class="op">)&gt;(</span>elem<span class="op">))</span>;</span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>                <span class="cf">if</span> <span class="op">(</span>result <span class="op">==</span> tc<span class="op">::</span>break_<span class="op">)</span></span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>                    <span class="cf">return</span> result;</span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>            <span class="op">}</span></span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> tc<span class="op">::</span>continue_;</span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span>;</span>
-<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>        <span class="co">// rng here is an iterator range, not a generator range.</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>        <span class="co">// With this proposal, it can be either, as the range-based for loop will work with both.</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Without it, generator ranges would need to be handled specially.</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> <span class="op">(</span><span class="kw">auto</span><span class="op">&amp;&amp;</span> elem <span class="op">:</span> rng<span class="op">)</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> <span class="op">(</span>predicate<span class="op">(</span>elem<span class="op">))</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>            <span class="op">{</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>                <span class="kw">auto</span> result <span class="op">=</span> sink<span class="op">(</span>std<span class="op">::</span>forward<span class="op">&lt;</span><span class="kw">decltype</span><span class="op">(</span>elem<span class="op">)&gt;(</span>elem<span class="op">))</span>;</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>                <span class="cf">if</span> <span class="op">(</span>result <span class="op">==</span> tc<span class="op">::</span>break_<span class="op">)</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>                    <span class="cf">return</span> result;</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>            <span class="op">}</span></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> tc<span class="op">::</span>continue_;</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span>;</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <p>However, we can also yield values from nested functions:</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">auto</span> tree_data<span class="op">(</span><span class="kw">const</span> tree<span class="op">&amp;</span> t<span class="op">)</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
@@ -793,31 +793,28 @@ minimum to enable writing generator ranges:</p>
 <span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>        flow <span class="op">=</span> sink<span class="op">(</span><span class="dv">2</span><span class="op">)</span>;</span>
 <span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="op">(!</span>flow<span class="op">)</span> <span class="cf">return</span> flow;</span>
 <span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>        flow <span class="op">=</span> sink<span class="op">(</span><span class="dv">3</span><span class="op">)</span>;</span>
-<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="op">(!</span>flow<span class="op">)</span> <span class="cf">return</span> flow;</span>
-<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> flow;</span>
-<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
-<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a><span class="op">}</span>;</span>
-<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> Generator<span class="op">&gt;</span></span>
-<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> use_generator_range<span class="op">(</span>Generator<span class="op">&amp;&amp;</span> generator<span class="op">)</span></span>
-<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
-<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>    generator<span class="op">([](</span><span class="kw">auto</span> value<span class="op">)</span> <span class="op">{</span></span>
-<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>        std<span class="op">::</span>print<span class="op">(</span><span class="st">&quot;{}</span><span class="sc">\n</span><span class="st">&quot;</span>, value<span class="op">)</span>;</span>
-<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Unconditionally continue generating.</span></span>
-<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> std<span class="op">::</span>continue_;</span>
-<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a>    <span class="op">})</span>;</span>
-<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a>    generator<span class="op">([](</span><span class="kw">auto</span> value<span class="op">)</span> <span class="op">-&gt;</span> std<span class="op">::</span>control_flow <span class="op">{</span></span>
-<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Exit early if we see the value 42.</span></span>
-<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="op">(</span>value <span class="op">==</span> <span class="dv">42</span><span class="op">)</span></span>
-<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> std<span class="op">::</span>break_;</span>
-<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a>        std<span class="op">::</span>print<span class="op">(</span><span class="st">&quot;{}</span><span class="sc">\n</span><span class="st">&quot;</span>, value<span class="op">)</span>;</span>
-<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> std<span class="op">::</span>continue_;</span>
-<span id="cb8-38"><a href="#cb8-38" aria-hidden="true" tabindex="-1"></a>    <span class="op">})</span>;</span>
-<span id="cb8-39"><a href="#cb8-39" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> sink<span class="op">(</span><span class="dv">3</span><span class="op">)</span>;</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a><span class="op">}</span>;</span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> Generator<span class="op">&gt;</span></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> use_generator_range<span class="op">(</span>Generator<span class="op">&amp;&amp;</span> generator<span class="op">)</span></span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>    generator<span class="op">([](</span><span class="kw">auto</span> value<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>        std<span class="op">::</span>print<span class="op">(</span><span class="st">&quot;{}</span><span class="sc">\n</span><span class="st">&quot;</span>, value<span class="op">)</span>;</span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Unconditionally continue generating.</span></span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> std<span class="op">::</span>continue_;</span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>    <span class="op">})</span>;</span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>    generator<span class="op">([](</span><span class="kw">auto</span> value<span class="op">)</span> <span class="op">-&gt;</span> std<span class="op">::</span>control_flow <span class="op">{</span></span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Exit early if we see the value 42.</span></span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="op">(</span>value <span class="op">==</span> <span class="dv">42</span><span class="op">)</span></span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> std<span class="op">::</span>break_;</span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a>        std<span class="op">::</span>print<span class="op">(</span><span class="st">&quot;{}</span><span class="sc">\n</span><span class="st">&quot;</span>, value<span class="op">)</span>;</span>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> std<span class="op">::</span>continue_;</span>
+<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a>    <span class="op">})</span>;</span>
+<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <p>The remaining features are “just” language support to make this idiom
 nicer.</p>
 <h2 data-number="4.2" id="generator-based-for-loop"><span class="header-section-number">4.2</span> Generator-based
@@ -851,7 +848,7 @@ nicer.</p>
 
 <div class="sourceCode" id="cb10"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">auto</span> __body <span class="op">=</span> <span class="op">[&amp;](</span><em>T</em><span class="op">&amp;&amp;</span> __element<span class="op">)</span> <span class="op">-&gt;</span> <em>see-below</em> <span class="op">{</span></span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>        <em>T</em> <em>binding</em> <span class="op">=</span> __element;</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>        <em>T</em> <em>binding</em> <span class="op">=</span> std<span class="op">::</span>forward<span class="op">&lt;</span><em>T</em><span class="op">&gt;(</span>__element<span class="op">)</span>;</span>
 <span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>        <em>body</em></span>
 <span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> std<span class="op">::</span>continue_;</span>
 <span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    <span class="op">})</span>;</span>
@@ -885,9 +882,12 @@ generator, passing it the body of the loop transformed into a lambda.
 That lambda takes the type specified in the binding of the loop
 qualified with <code class="sourceCode default">&amp;&amp;</code>.
 Reference collapsing rules ensure that it is turned into an lvalue
-reference if necessary. The lambda body then consists of the binding of
-the range-based <code class="sourceCode default">for</code> loop, the
-body of the loop, and a (potentially unreachable)
+reference if necessary. The extra step is necessary as the binding of
+the <code class="sourceCode default">for</code>-loop might be a
+structured binding which is not allowed as a lambda argument. The lambda
+body then consists of the binding of the range-based
+<code class="sourceCode default">for</code> loop, the body of the loop,
+and a (potentially unreachable)
 <code class="sourceCode default">return std::continue_</code>.</p>
 <p>The loop body is kept as-is, except for control flow statements which
 need to be translated:</p>
@@ -912,7 +912,7 @@ which has the same effect as
 <code class="sourceCode default">std::break_</code> but also causes the
 compiler to forward the <code class="sourceCode default">return</code>
 after the loop.</li>
-<li>A <code class="sourceCode default">goto</code> that exists the
+<li>A <code class="sourceCode default">goto</code> that exits the
 range-based <code class="sourceCode default">for</code> loop is
 transformed to <code class="sourceCode default">return <em>implementation-defined</em></code>,
 which has the same effect as
@@ -944,51 +944,81 @@ express in C++. In particular,
 <code class="sourceCode default">return <em>expr</em></code> must
 directly construct the expression in the return slot to enable copy
 elision.</p>
-<h2 data-number="4.3" id="syntax-sugar-for-sink-calls-optional"><span class="header-section-number">4.3</span> Syntax sugar for sink calls
+<h2 data-number="4.3" id="relaxing-requirements-for-sink-returns-alternative-design"><span class="header-section-number">4.3</span> Relaxing requirements for sink
+returns (alternative design)<a href="#relaxing-requirements-for-sink-returns-alternative-design" class="self-link"></a></h2>
+<p>The implementation in think-cell allows arbitrary return types for
+the sink, not just
+<code class="sourceCode default">std::control_flow</code> and related
+types. If a type is not a control flow type including
+<code class="sourceCode default">void</code>, it is treated as
+<code class="sourceCode default">std::continue_</code>. That way, if a
+sink is written by hand or wraps an existing function, if it doesn’t
+want an early return, it doesn’t need to do anything. Otherwise, it
+would need to add an unnecessary
+<code class="sourceCode default">return std::continue_</code>.</p>
+<p>This complicates the implementation for sink calls, which now need to
+translate an arbitrary type (including void) to
+<code class="sourceCode default">std::continue_t</code> before
+branching. As such, it requires the addition of an additional
+standardized helper functions for that logic like <code class="sourceCode default">std::control_flow::invoke(sink, value)</code>,
+or standardized syntax sugar (see below).</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> Sink, <span class="kw">typename</span> <span class="op">...</span> Args<span class="op">&gt;</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="kw">constexpr</span> <span class="kw">auto</span> std<span class="op">::</span>control_flow<span class="op">::</span>invoke<span class="op">(</span>Sink<span class="op">&amp;&amp;</span> sink, Args<span class="op">&amp;&amp;...</span> args<span class="op">)</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">using</span> result <span class="op">=</span> std<span class="op">::</span>invoke_result_t<span class="op">&lt;</span>Sink<span class="op">&amp;&amp;</span>, Args<span class="op">&amp;&amp;...&gt;</span>;</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="kw">constexpr</span> <span class="op">(</span>std<span class="op">::</span>is_same_v<span class="op">&lt;</span>result, std<span class="op">::</span>control_flow<span class="op">&gt;</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>               <span class="op">||</span> std<span class="op">::</span>is_same_v<span class="op">&lt;</span>result, std<span class="op">::</span>continue_t<span class="op">&gt;</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>               <span class="op">||</span> std<span class="op">::</span>is_same_v<span class="op">&lt;</span>result, std<span class="op">::</span>break_t<span class="op">&gt;)</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> std<span class="op">::</span>invoke<span class="op">(</span>std<span class="op">::</span>forward<span class="op">&lt;</span>Sink<span class="op">&gt;(</span>sink<span class="op">)</span>, std<span class="op">::</span>forward<span class="op">&lt;</span>Args<span class="op">&gt;(</span>args<span class="op">)...)</span>;</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>        std<span class="op">::</span>invoke<span class="op">(</span>std<span class="op">::</span>forward<span class="op">&lt;</span>Sink<span class="op">&gt;(</span>sink<span class="op">)</span>, std<span class="op">::</span>forward<span class="op">&lt;</span>Args<span class="op">&gt;(</span>args<span class="op">)...)</span>;</span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> std<span class="op">::</span>continue_;</span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>If a generator range is only used with the range-based
+<code class="sourceCode default">for</code> loop, this is not necessary
+as the compiler generated sink will always have the right type, but in
+think-cell’s experience where generators can be used with arbitrary
+algorithms and their custom lambdas, it is very convenient if the work
+of adjusting the return type is moved from the caller to the generator
+implementation.</p>
+<h2 data-number="4.4" id="syntax-sugar-for-sink-calls-optional"><span class="header-section-number">4.4</span> Syntax sugar for sink calls
 (optional)<a href="#syntax-sugar-for-sink-calls-optional" class="self-link"></a></h2>
 <p>The implementation of a generator will necessarily have code that
 invoke the sink and does an early return:</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="kw">auto</span> flow <span class="op">=</span> sink<span class="op">(</span>value<span class="op">)</span>;</span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="op">(!</span>flow<span class="op">)</span> <span class="cf">return</span> flow;</span></code></pre></div>
-<p>This is a exact the same pattern that happens when using
-<code class="sourceCode default">std::expected</code> like error
-propagation, and can be solved using the error propagation operator from
-<span class="citation" data-cites="P2561R1">[<a href="#ref-P2561R1" role="doc-biblioref">P2561R1</a>]</span>:
-<code class="sourceCode default">sink(value)??</code>.</p>
-<p>Alternatively, we could keep the coroutine connection and allow a
-special <code class="sourceCode default">co_yield</code>-into
-statement</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="kw">co_yield</span><span class="op">(</span>sink<span class="op">)</span> value;</span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="co">// or</span></span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="kw">co_yield</span><span class="op">(</span>sink, value<span class="op">)</span>;</span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="co">// or</span></span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="kw">co_yield</span><span class="op">[</span>sink<span class="op">]</span> value;</span>
-<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="co">// or</span></span>
-<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a><span class="kw">co_yield</span><span class="op">&lt;</span>sink<span class="op">&gt;</span> value;</span></code></pre></div>
-<h2 data-number="4.4" id="syntax-sugar-for-return-stdcontinue_-optional"><span class="header-section-number">4.4</span> Syntax sugar for
-<code class="sourceCode default">return std::continue_</code>
-(optional)<a href="#syntax-sugar-for-return-stdcontinue_-optional" class="self-link"></a></h2>
-<p>If a sink is written by hand, the majority of them will end with a
-<code class="sourceCode default">return std::continue_;</code>, which
-can be a bit annoying.</p>
-<p>One solution would be to support a sink that returns
-<code class="sourceCode default">void</code> and treat it as-if it
-returned <code class="sourceCode default">std::continue_t</code>.
-However, this means that we cannot handle the result of the sink
-directly and instead need to check the return type first or wrap the
-<code class="sourceCode default">sink(value)</code> call into something
-that translates <code class="sourceCode default">void</code> to
-<code class="sourceCode default">std::continue_t</code>. Alternatively,
-the syntax sugar for the sink call could do that translation for us.</p>
-<p>A more general solution would be to allow omitting the return
-statement in functions that return empty types and not just in functions
-that return <code class="sourceCode default">void</code>. That way,
-instead of writing
-<code class="sourceCode default">return std::continue_</code>, the
-return type of the lambda just needs to be specified as
-<code class="sourceCode default">-&gt; std::continue_t</code> and an
-early return is just
-<code class="sourceCode default">return;</code>.</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="kw">auto</span> flow <span class="op">=</span> sink<span class="op">(</span>value<span class="op">)</span>;</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="op">(!</span>flow<span class="op">)</span> <span class="cf">return</span> flow;</span></code></pre></div>
+<p>If the <code class="sourceCode default">sink</code> can return
+arbitrary types including <code class="sourceCode default">void</code>
+(see above), this requires even more boilerplate or a helper function to
+translate it first.</p>
+<p>Some sort of syntax sugar for this pattern (including the translation
+to a <code class="sourceCode default">std::control_flow</code> type)
+would be helpful, such as a special
+<code class="sourceCode default">co_yield</code>-into statement:</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">co_yield</span><span class="op">(</span>sink<span class="op">)</span> value;</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="co">// or</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="kw">co_yield</span><span class="op">(</span>sink, value<span class="op">)</span>;</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="co">// or</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="kw">co_yield</span><span class="op">[</span>sink<span class="op">]</span> value;</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="co">// or</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="kw">co_yield</span><span class="op">&lt;</span>sink<span class="op">&gt;</span> value;</span></code></pre></div>
+<p>However, re-using <code class="sourceCode default">co_yield</code> in
+that way might result in parsing ambiguities with regular coroutine
+<code class="sourceCode default">co_yield</code>, so that paticular
+syntax might be infeasible.</p>
+<p>The pattern here of “check if result is an error and forward it with
+an early return if necessary” is error propagation, so it can be solved
+using the error propagation operator from <span class="citation" data-cites="P2561R1">[<a href="#ref-P2561R1" role="doc-biblioref">P2561R1</a>]</span>:
+<code class="sourceCode default">sink(value)??</code>. However,
+<code class="sourceCode default">??</code> alone will not support the
+type translation to
+<code class="sourceCode default">std::control_flow</code>, so if that
+option is taken, it needs to be <code class="sourceCode default">std::control_flow::invoke(sink, value)??</code>
+or some similar helper function.</p>
 <h2 data-number="4.5" id="stdranges-support-future-paper"><span class="header-section-number">4.5</span>
 <code class="sourceCode default">std::ranges</code> support (future
 paper)<a href="#stdranges-support-future-paper" class="self-link"></a></h2>
@@ -997,8 +1027,11 @@ support for generator ranges to the standard library. This includes
 concept machinery, turning views into generator ranges where appropriate
 for better iteration performance, and adding support for generator
 ranges to single-loop range algorithms like
-<code class="sourceCode default">std::ranges::for_each</code> or
-<code class="sourceCode default">std::ranges::copy</code>.</p>
+<code class="sourceCode default">std::ranges::for_each</code>,
+<code class="sourceCode default">std::ranges::copy</code>, or
+<code class="sourceCode default">std::ranges::fold_left</code> (plus
+variants and fold-like algorithms like
+<code class="sourceCode default">std::ranges::any_of</code>).</p>
 <h1 data-number="5" id="open-questions"><span class="header-section-number">5</span> Open questions<a href="#open-questions" class="self-link"></a></h1>
 <h2 data-number="5.1" id="spelling-of-the-generator-function"><span class="header-section-number">5.1</span> Spelling of the generator
 function<a href="#spelling-of-the-generator-function" class="self-link"></a></h2>
@@ -1010,24 +1043,24 @@ that takes a sink and returns
 <code class="sourceCode default">std::break_t</code>, or
 <code class="sourceCode default">std::continue_t</code>. This spelling
 has the advantage that lambdas can directly be used as generators. For
-example, if we the range adapters were updated to use generator ranges
+example, if the range adapters were updated to use generator ranges
 (like the ones in the think-cell-library), we could write code like
 this:</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Copy a C FILE to a buffer.</span></span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>std<span class="op">::</span>ranges<span class="op">::</span>copy<span class="op">([&amp;](</span><span class="kw">auto</span><span class="op">&amp;&amp;</span> sink<span class="op">)</span> <span class="op">{</span></span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    std<span class="op">::</span>control_flow flow;</span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">while</span> <span class="op">(</span><span class="kw">true</span><span class="op">)</span></span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
-<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>        <span class="kw">auto</span> c <span class="op">=</span> std<span class="op">::</span>fgetc<span class="op">(</span>file<span class="op">)</span>;</span>
-<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="op">(</span>c <span class="op">==</span> EOF<span class="op">)</span></span>
-<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>            <span class="cf">break</span>;</span>
-<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>        flow <span class="op">=</span> sink<span class="op">(</span>c<span class="op">)</span>;</span>
-<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="op">(!</span>flow<span class="op">)</span></span>
-<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>          <span class="cf">break</span>;</span>
-<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
-<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> flow;</span>
-<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a><span class="op">}</span>, buffer<span class="op">)</span>;</span></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Copy a C FILE to a buffer.</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>std<span class="op">::</span>ranges<span class="op">::</span>copy<span class="op">([&amp;](</span><span class="kw">auto</span><span class="op">&amp;&amp;</span> sink<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>    std<span class="op">::</span>control_flow flow;</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">while</span> <span class="op">(</span><span class="kw">true</span><span class="op">)</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>        <span class="kw">auto</span> c <span class="op">=</span> std<span class="op">::</span>fgetc<span class="op">(</span>file<span class="op">)</span>;</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="op">(</span>c <span class="op">==</span> EOF<span class="op">)</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>            <span class="cf">break</span>;</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>        flow <span class="op">=</span> sink<span class="op">(</span>c<span class="op">)</span>;</span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="op">(!</span>flow<span class="op">)</span></span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>          <span class="cf">break</span>;</span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> flow;</span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a><span class="op">}</span>, buffer<span class="op">)</span>;</span></code></pre></div>
 <p>However, we are open to a different spelling. An early draft of the
 paper used <code class="sourceCode default">operator for</code> instead
 of <code class="sourceCode default">operator()</code>, where
@@ -1041,8 +1074,8 @@ custom behavior when used with a range-based
 <p>What should happen if the <code class="sourceCode default">for</code>
 loop uses <code class="sourceCode default">auto</code> for the type of
 the loop variable?</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> <span class="op">(</span><span class="kw">auto</span> x <span class="op">:</span> generator123<span class="op">())</span></span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>    …</span></code></pre></div>
+<div class="sourceCode" id="cb15"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> <span class="op">(</span><span class="kw">auto</span> x <span class="op">:</span> generator123<span class="op">())</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>    …</span></code></pre></div>
 <p>With the specification of
 <code class="sourceCode default">operator()</code> it is very difficult
 for the compiler to figure out what is the actual value type of the
@@ -1064,39 +1097,39 @@ fixed type.</li>
 </ol>
 <p>Option 3 is particular appealing as it allows iteration of types like
 <code class="sourceCode default">std::tuple</code>:</p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> <span class="op">...</span> T<span class="op">&gt;</span></span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> tuple</span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">auto</span> <span class="kw">operator</span><span class="op">()(</span><span class="kw">auto</span><span class="op">&amp;&amp;</span> sink<span class="op">)</span> <span class="kw">const</span></span>
-<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
-<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> generator_impl<span class="op">(</span>std<span class="op">::</span>index_sequence_for<span class="op">&lt;</span>T<span class="op">...&gt;{}</span>, sink<span class="op">)</span>;</span>
-<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
-<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">template</span> <span class="op">&lt;</span>std<span class="op">::</span><span class="dt">size_t</span> <span class="op">...</span> Idx, <span class="kw">typename</span> Fn<span class="op">&gt;</span></span>
-<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>    <span class="kw">auto</span> generator_impl<span class="op">(</span>std<span class="op">::</span>index_sequence<span class="op">&lt;</span>Idx<span class="op">...&gt;</span>, Fn<span class="op">&amp;&amp;</span> sink<span class="op">)</span> <span class="kw">const</span></span>
-<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
-<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>        std<span class="op">::</span>common_type_t<span class="op">&lt;</span><span class="kw">decltype</span><span class="op">(</span>sink<span class="op">(</span>std<span class="op">::</span>get<span class="op">&lt;</span>Idx<span class="op">&gt;(*</span><span class="kw">this</span><span class="op">)))...&gt;</span> flow;</span>
-<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>        <span class="co">// &amp;&amp; short-circuits once we have a break-like control flow.</span></span>
-<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>        <span class="op">((</span>flow <span class="op">=</span> sink<span class="op">(</span>std<span class="op">::</span>get<span class="op">&lt;</span>Idx<span class="op">&gt;(*</span><span class="kw">this</span><span class="op">)))</span> <span class="op">&amp;&amp;</span> <span class="op">...)</span>;</span>
-<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> flow;</span>
-<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
-<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a><span class="op">}</span>;</span>
-<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a>…</span>
-<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> <span class="op">(</span><span class="kw">auto</span> elem <span class="op">:</span> std<span class="op">::</span>make_tuple<span class="op">(</span><span class="dv">42</span>, <span class="fl">3.14</span><span class="bu">f</span>, <span class="st">&quot;hello&quot;</span><span class="op">))</span></span>
-<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a>    std<span class="op">::</span>print<span class="op">(</span><span class="st">&quot;{}</span><span class="sc">\n</span><span class="st">&quot;</span>, elem<span class="op">)</span>;</span></code></pre></div>
+<div class="sourceCode" id="cb16"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> <span class="op">...</span> T<span class="op">&gt;</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> tuple</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">auto</span> <span class="kw">operator</span><span class="op">()(</span><span class="kw">auto</span><span class="op">&amp;&amp;</span> sink<span class="op">)</span> <span class="kw">const</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> generator_impl<span class="op">(</span>std<span class="op">::</span>index_sequence_for<span class="op">&lt;</span>T<span class="op">...&gt;{}</span>, sink<span class="op">)</span>;</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">template</span> <span class="op">&lt;</span>std<span class="op">::</span><span class="dt">size_t</span> <span class="op">...</span> Idx, <span class="kw">typename</span> Fn<span class="op">&gt;</span></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>    <span class="kw">auto</span> generator_impl<span class="op">(</span>std<span class="op">::</span>index_sequence<span class="op">&lt;</span>Idx<span class="op">...&gt;</span>, Fn<span class="op">&amp;&amp;</span> sink<span class="op">)</span> <span class="kw">const</span></span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>        std<span class="op">::</span>common_type_t<span class="op">&lt;</span><span class="kw">decltype</span><span class="op">(</span>sink<span class="op">(</span>std<span class="op">::</span>get<span class="op">&lt;</span>Idx<span class="op">&gt;(*</span><span class="kw">this</span><span class="op">)))...&gt;</span> flow;</span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>        <span class="co">// &amp;&amp; short-circuits once we have a break-like control flow.</span></span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>        <span class="op">((</span>flow <span class="op">=</span> sink<span class="op">(</span>std<span class="op">::</span>get<span class="op">&lt;</span>Idx<span class="op">&gt;(*</span><span class="kw">this</span><span class="op">)))</span> <span class="op">&amp;&amp;</span> <span class="op">...)</span>;</span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> flow;</span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a><span class="op">}</span>;</span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>…</span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> <span class="op">(</span><span class="kw">auto</span> elem <span class="op">:</span> std<span class="op">::</span>make_tuple<span class="op">(</span><span class="dv">42</span>, <span class="fl">3.14</span><span class="bu">f</span>, <span class="st">&quot;hello&quot;</span><span class="op">))</span></span>
+<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a>    std<span class="op">::</span>print<span class="op">(</span><span class="st">&quot;{}</span><span class="sc">\n</span><span class="st">&quot;</span>, elem<span class="op">)</span>;</span></code></pre></div>
 <p>This is a different way of implementing expansion statements <span class="citation" data-cites="P1306R1">[<a href="#ref-P1306R1" role="doc-biblioref">P1306R1</a>]</span>.</p>
 <h2 data-number="5.3" id="stdstacktrace-and-__func__"><span class="header-section-number">5.3</span>
 <code class="sourceCode default">std::stacktrace</code> and
 <code class="sourceCode default">__func__</code><a href="#stdstacktrace-and-__func__" class="self-link"></a></h2>
 <p>What does the following code print?</p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> foo<span class="op">()</span></span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> <span class="op">(</span><span class="dt">int</span> x <span class="op">:</span> generator123<span class="op">())</span></span>
-<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
-<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>        std<span class="op">::</span>cout <span class="op">&lt;&lt;</span> <span class="ot">__func__</span> <span class="op">&lt;&lt;</span> <span class="ch">&#39; &#39;</span> <span class="op">&lt;&lt;</span> std<span class="op">::</span>stacktrace<span class="op">::</span>current<span class="op">()</span> <span class="op">&lt;&lt;</span> <span class="ch">&#39;</span><span class="sc">\n</span><span class="ch">&#39;</span>;</span>
-<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
-<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb17"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> foo<span class="op">()</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> <span class="op">(</span><span class="dt">int</span> x <span class="op">:</span> generator123<span class="op">())</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>        std<span class="op">::</span>cout <span class="op">&lt;&lt;</span> <span class="ot">__func__</span> <span class="op">&lt;&lt;</span> <span class="ch">&#39; &#39;</span> <span class="op">&lt;&lt;</span> std<span class="op">::</span>stacktrace<span class="op">::</span>current<span class="op">()</span> <span class="op">&lt;&lt;</span> <span class="ch">&#39;</span><span class="sc">\n</span><span class="ch">&#39;</span>;</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <p>Does it print the name <code class="sourceCode default">foo</code>
 and the stack trace beginning at
 <code class="sourceCode default">foo</code>, as that is what it looks
@@ -1115,26 +1148,26 @@ in <code class="sourceCode default">operator for</code><a href="#exceptions-in-f
 <code class="sourceCode default">[1, 2, 3]</code>) and thus never call
 <code class="sourceCode default">g()</code> or
 <code class="sourceCode default">h()</code>.</p>
-<div class="sourceCode" id="cb17"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> <span class="op">(</span><span class="dt">int</span> x <span class="op">:</span> generator123<span class="op">())</span></span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
-<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>x <span class="op">==</span> <span class="dv">1</span><span class="op">)</span> <span class="cf">throw</span> <span class="dv">42</span>;</span>
-<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>    g<span class="op">()</span>;</span>
-<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
-<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>h<span class="op">()</span>;</span></code></pre></div>
+<div class="sourceCode" id="cb18"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> <span class="op">(</span><span class="dt">int</span> x <span class="op">:</span> generator123<span class="op">())</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>x <span class="op">==</span> <span class="dv">1</span><span class="op">)</span> <span class="cf">throw</span> <span class="dv">42</span>;</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>    g<span class="op">()</span>;</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>h<span class="op">()</span>;</span></code></pre></div>
 <p>But what if we have a somewhat malicious
 <code class="sourceCode default">operator()</code> implementation that
 swallows all exceptions?</p>
-<div class="sourceCode" id="cb18"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> generator123</span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
-<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">auto</span> <span class="kw">operator</span><span class="op">()(</span><span class="kw">auto</span><span class="op">&amp;&amp;</span> sink<span class="op">)</span> <span class="kw">const</span></span>
-<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
-<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>        <span class="cf">try</span></span>
-<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>        <span class="op">{</span></span>
-<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> sink<span class="op">(</span><span class="dv">1</span><span class="op">)</span>;</span>
-<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
-<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>        <span class="cf">catch</span> <span class="op">(...)</span> <span class="op">{}</span></span>
-<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
-<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a><span class="op">}</span>;</span></code></pre></div>
+<div class="sourceCode" id="cb19"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> generator123</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">auto</span> <span class="kw">operator</span><span class="op">()(</span><span class="kw">auto</span><span class="op">&amp;&amp;</span> sink<span class="op">)</span> <span class="kw">const</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>        <span class="cf">try</span></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>        <span class="op">{</span></span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> sink<span class="op">(</span><span class="dv">1</span><span class="op">)</span>;</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>        <span class="cf">catch</span> <span class="op">(...)</span> <span class="op">{}</span></span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a><span class="op">}</span>;</span></code></pre></div>
 <p>As specified, the exception propagates out of
 <code class="sourceCode default">sink()</code> and is then discarded by
 the <code class="sourceCode default">operator()</code>, so we will call

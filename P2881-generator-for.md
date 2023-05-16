@@ -24,19 +24,13 @@ struct generator123
     {
         std::control_flow flow;
 
-        // With P2561: sink(1)??;
         flow = sink(1);
         if (!flow) return flow;
 
-        // With P2561: sink(2)??;
         flow = sink(2);
         if (!flow) return flow;
 
-        // With P2561: sink(3)??;
-        flow = sink(3);
-        if (!flow) return flow;
-
-        return flow;
+        return sink(3);
     }
 };
 
@@ -134,14 +128,14 @@ Note that this is only a limitation of `std::generator` and the iterator interfa
 # Generator Range Idiom
 
 In the [think-cell-library](https://github.com/think-cell/think-cell-library), this problem is solved using a concept of *generator ranges*.
-It is even weaker than an input range -- it can only be iterated over, and once the iteration is stopped,
+It is in some aspects even weaker than an input range -- it can only be iterated over, and once the iteration is stopped,
 it cannot resume later on.
-However, if all you want is `std::ranges::for_each` or similar algorithms that require only a single loop, it is enough.
+However, it is enough for algorithms that require only a single loop, like `std::ranges::for_each`, `std::ranges::copy`, or `std::ranges::fold_left` (plus variants and fold-like algorithms like `std::ranges::any_of`).
 
 A generator ranges is implemented as a type with an overloaded `operator()` that takes another callable, a sink.
 It will then use internal iteration invoking the sink with each argument.
 Early exit (i.e. `break`) is possible by returning `tc::break_` from the sink,
-which the `operator()` then detects, stops iteration, and forward the result.
+which the `operator()` then detects, stops iteration, and forwards the result.
 
 Range adapters like `filter()`, `join()` or `concat()` are still easy to write:
 
@@ -151,6 +145,9 @@ auto filter(Rng&& rng, Predicate predicate)
 {
     // Returned lambda is a generator range.
     return [=](auto sink) {
+        // rng here is an iterator range, not a generator range.
+        // With this proposal, it can be either, as the range-based for loop will work with both.
+        // Without it, generator ranges would need to be handled specially.
         for (auto&& elem : rng)
             if (predicate(elem))
             {
@@ -280,10 +277,7 @@ struct generator123
         flow = sink(2);
         if (!flow) return flow;
 
-        flow = sink(3);
-        if (!flow) return flow;
-
-        return flow;
+        return sink(3);
     }
 };
 
@@ -329,7 +323,7 @@ for (@_T_@ @_binding_@ : @_object_@)
 ```cpp
 {
     auto __body = [&](@_T_@&& __element) -> @_see-below_@ {
-        @_T_@ @_binding_@ = __element;
+        @_T_@ @_binding_@ = std::forward<@_T_@>(__element);
         @_body_@
         return std::continue_;
     });
@@ -347,6 +341,7 @@ If the type has both `begin()` and `end()`, the generator-based version is prefe
 The `for` loop is lowered to a call to `operator()` on the generator, passing it the body of the loop transformed into a lambda.
 That lambda takes the type specified in the binding of the loop qualified with `&&`.
 Reference collapsing rules ensure that it is turned into an lvalue reference if necessary.
+The extra step is necessary as the binding of the `for`-loop might be a structured binding which is not allowed as a lambda argument.
 The lambda body then consists of the binding of the range-based `for` loop,
 the body of the loop, and a (potentially unreachable) `return std::continue_`.
 
@@ -356,7 +351,7 @@ The loop body is kept as-is, except for control flow statements which need to be
 * A top-level `break;` is transformed to `return std::break_`.
 * A `return;` is transformed to `return @_implementation-defined_@`, which has the same effect as `std::break_` but also causes the compiler to forward the `return` after the loop.
 * A `return @_expr_@;` is transformed to something that evaluates `@_expr_@` and stores it somewhere, before a `return @_implementation-defined_@` which has the same effect as `std::break_` but also causes the compiler to forward the `return` after the loop.
-* A `goto` that exists the range-based `for` loop is transformed to `return @_implementation-defined_@`, which has the same effect as `std::break_` but also causes the compiler to forward the `goto` after the loop.
+* A `goto` that exits the range-based `for` loop is transformed to `return @_implementation-defined_@`, which has the same effect as `std::break_` but also causes the compiler to forward the `goto` after the loop.
 * A `throw` is kept as-is.
 * A `co_await`/`co_yield`/`co_return` is ill-formed.
 
@@ -370,6 +365,38 @@ An example lowering is given on [godbolt](https://godbolt.org/z/MrqocfhfK).
 Note that the compiler may do a more efficient job during codegen than what we can express in C++.
 In particular, `return @_expr_@` must directly construct the expression in the return slot to enable copy elision.
 
+## Relaxing requirements for sink returns (alternative design)
+
+The implementation in think-cell allows arbitrary return types for the sink, not just `std::control_flow` and related types.
+If a type is not a control flow type including `void`, it is treated as `std::continue_`.
+That way, if a sink is written by hand or wraps an existing function, if it doesn't want an early return, it doesn't need to do anything.
+Otherwise, it would need to add an unnecessary `return std::continue_`.
+
+This complicates the implementation for sink calls, which now need to translate an arbitrary type (including void) to `std::continue_t` before branching.
+As such, it requires the addition of an additional standardized helper functions for that logic like `std::control_flow::invoke(sink, value)`, or standardized syntax sugar (see below).
+
+```cpp
+template <typename Sink, typename ... Args>
+constexpr auto std::control_flow::invoke(Sink&& sink, Args&&... args)
+{
+    using result = std::invoke_result_t<Sink&&, Args&&...>;
+    if constexpr (std::is_same_v<result, std::control_flow>
+               || std::is_same_v<result, std::continue_t>
+               || std::is_same_v<result, std::break_t>)
+    {
+        return std::invoke(std::forward<Sink>(sink), std::forward<Args>(args)...);
+    }
+    else
+    {
+        std::invoke(std::forward<Sink>(sink), std::forward<Args>(args)...);
+        return std::continue_;
+    }
+}
+```
+
+If a generator range is only used with the range-based `for` loop, this is not necessary as the compiler generated sink will always have the right type,
+but in think-cell's experience where generators can be used with arbitrary algorithms and their custom lambdas, it is very convenient if the work of adjusting the return type is moved from the caller to the generator implementation.
+
 ## Syntax sugar for sink calls (optional)
 
 The implementation of a generator will necessarily have code that invoke the sink and does an early return:
@@ -379,10 +406,9 @@ auto flow = sink(value);
 if (!flow) return flow;
 ```
 
-This is a exact the same pattern that happens when using `std::expected` like error propagation,
-and can be solved using the error propagation operator from [@P2561R1]: `sink(value)??`.
+If the `sink` can return arbitrary types including `void` (see above), this requires even more boilerplate or a helper function to translate it first.
 
-Alternatively, we could keep the coroutine connection and allow a special `co_yield`-into statement
+Some sort of syntax sugar for this pattern (including the translation to a `std::control_flow` type) would be helpful, such as a special `co_yield`-into statement:
 
 ```cpp
 co_yield(sink) value;
@@ -394,21 +420,16 @@ co_yield[sink] value;
 co_yield<sink> value;
 ```
 
-## Syntax sugar for `return std::continue_` (optional)
+However, re-using `co_yield` in that way might result in parsing ambiguities with regular coroutine `co_yield`, so that paticular syntax might be infeasible.
 
-If a sink is written by hand, the majority of them will end with a `return std::continue_;`, which can be a bit annoying.
-
-One solution would be to support a sink that returns `void` and treat it as-if it returned `std::continue_t`.
-However, this means that we cannot handle the result of the sink directly and instead need to check the return type first or wrap the `sink(value)` call into something that translates `void` to `std::continue_t`.
-Alternatively, the syntax sugar for the sink call could do that translation for us.
-
-A more general solution would be to allow omitting the return statement in functions that return empty types and not just in functions that return `void`.
-That way, instead of writing `return std::continue_`, the return type of the lambda just needs to be specified as `-> std::continue_t` and an early return is just `return;`.
+The pattern here of "check if result is an error and forward it with an early return if necessary" is error propagation,
+so it can be solved using the error propagation operator from [@P2561R1]: `sink(value)??`.
+However, `??` alone will not support the type translation to `std::control_flow`, so if that option is taken, it needs to be `std::control_flow::invoke(sink, value)??` or some similar helper function.
 
 ## `std::ranges` support (future paper)
 
 If there is interest in the feature, a separate paper will add support for generator ranges to the standard library.
-This includes concept machinery, turning views into generator ranges where appropriate for better iteration performance, and adding support for generator ranges to single-loop range algorithms like `std::ranges::for_each` or `std::ranges::copy`.
+This includes concept machinery, turning views into generator ranges where appropriate for better iteration performance, and adding support for generator ranges to single-loop range algorithms like `std::ranges::for_each`, `std::ranges::copy`, or `std::ranges::fold_left` (plus variants and fold-like algorithms like `std::ranges::any_of`).
 
 # Open questions
 
@@ -416,7 +437,7 @@ This includes concept machinery, turning views into generator ranges where appro
 
 As proposed, the generator-based `for` loop is triggered when the range type has an `operator()` that takes a sink and returns `std::control_flow`, `std::break_t`, or `std::continue_t`.
 This spelling has the advantage that lambdas can directly be used as generators.
-For example, if we the range adapters were updated to use generator ranges (like the ones in the think-cell-library), we could write code like this:
+For example, if the range adapters were updated to use generator ranges (like the ones in the think-cell-library), we could write code like this:
 
 ```cpp
 // Copy a C FILE to a buffer.
