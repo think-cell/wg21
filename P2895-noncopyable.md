@@ -12,7 +12,7 @@ author:
 
 # Abstract
 
-We propose the addition of `std::noncopyable` and `std::nonmoveable`, utility classes you can inherit form to make your class non-copyable and/or non-moveable.
+We propose the addition of `std::noncopyable` and `std::nonmovable`, utility classes you can inherit from to make your class non-copyable and/or non-movable.
 
 # Motivation
 
@@ -102,7 +102,7 @@ In both classes, the default constructor is declared as default and is thus triv
 
 # Acknowledgements 
 
-Alisdair for the original paper [@N2675].
+We thank Alisdair Meredith for the original paper proposing to standardize the behavior of boost::noncopyable. [@N2675].
 
 # Wording
 
@@ -184,7 +184,7 @@ using nonmovable-adl-namespace::nonmovable;
 
 [1]{.pnum} `nonmovable` is provided to simplify creation of classes that inhibit move and copy semantics.
 
-[*Note*: `nonmoveable` is provided in an unspecified nested namespace to limit argument dependent lookup [basic.lookup.argdep]{ .sref }; no other names should be declared in this namespace. — *end note*]
+[*Note*: `nonmovable` is provided in an unspecified nested namespace to limit argument dependent lookup [basic.lookup.argdep]{ .sref }; no other names should be declared in this namespace. — *end note*]
 
 [*Example*:
 ```cpp
