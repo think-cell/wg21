@@ -24,9 +24,11 @@ struct generator123
     {
         std::control_flow flow;
 
+        // With P2561: sink(1)??;
         flow = sink(1);
         if (!flow) return flow;
 
+        // With P2561: sink(2)??;
         flow = sink(2);
         if (!flow) return flow;
 
@@ -53,7 +55,7 @@ Compare e.g. the implementation of `std::views::filter`, `std::views::join` or t
 
 ```cpp
 template <typename Rng, typename Predicate>
-auto filter(Rng&& rng, Predicate predicate) -> std::generator<std::ranges::range_value_t<Rng>>
+auto filter(Rng&& rng, Predicate predicate) -> std::generator<…>
 {
     for (auto&& elem : rng)
         if (predicate(elem))
@@ -67,16 +69,16 @@ auto join(Rng&& rng_of_rng) -> std::generator<…>
         co_yield std::ranges::elements_of(std::forward<decltype(rng)>(rng));
 }
 
-template <typename RngH, typename ... RngT>
-auto concat(RngH&& head, RngT&&... tail) -> std::generator<…>
+template <typename ... Rng>
+auto concat(Rng&& ... rng ) -> std::generator<…>
 {
-    co_yield std::ranges::elements_of(std::forward<decltype(head)>(head));
+    ((co_yield std::ranges::elements_of(std::forward<decltype(rng)>(rng))), ...);
 }
 ```
 
-However, ranges implemented using `co_yield` has three disadvantages.
+However, ranges implemented using `co_yield` have three disadvantages.
 
-## Performance of `std::generator` and coroutines
+## Performance of `std::generator`, coroutines, and iterators
 
 The coroutine transformation requires heap allocation, splitting one function into multiple, and exception machinery.
 This adds overhead compared to the iterator version or a hand-written version.
@@ -86,8 +88,14 @@ the latter is 3x slower on GCC.
 Note that the coroutine uses `SimpleGenerator` not `std::generator`.
 `SimpleGenerator` already optimizes heap allocations by using a pre-allocated buffer and terminates on an unhandled exception.
 The benchmark is available on [quick-bench](https://quick-bench.com/q/n949kUSL8_Z7Ef0-gqhjWaxXWUY).
+On clang, coroutines are better optimized, but they are still sometimes slower than a callback-based version, especially when the range is small and/or the computation per element cheap.
 
-Yes, in principle compilers could optimize coroutines better, but there is a difference between having something that is only fast because of optimizers and something that is fast by design.
+Just writing manual iterators instead isn't a solution either.
+Common state of the range (like `filter_view`'s predicate) is stored in the view, which the iterator accesses via pointer.
+As compilers can rarely proof non-aliasing with pointers, the state needs to be repeatedly reloaded for every access.
+The only way to get full control over performance is to use neither iterators nor coroutines, which is a shame.
+
+Yes, in principle compilers could optimize coroutines and iterators better, but there is a difference between having something that is only fast because of optimizers and something that is fast by design.
 Only the latter is a true zero-overhead abstraction.
 
 ## Inability to `co_yield` from nested scope
@@ -102,12 +110,12 @@ struct tree
 };
 ```
 
-Writing a coroutine-based generator that yields data cannot use `std::visit`, as `co_yield` needs to be in the top-level scope:
+Writing a coroutine-based generator that yields data cannot directly use `std::visit`, as `co_yield` needs to be in the top-level scope:
 
 ```cpp
 std::generator<int> tree_data(const tree& t)
 {
-    std::visit(overloaded([&](int data) {
+      std::visit(overloaded([&](int data) {
           co_yield data; // error
       }, [&](const std::vector<tree>& children) {
           for (auto& child : children)
@@ -116,9 +124,25 @@ std::generator<int> tree_data(const tree& t)
 }
 ```
 
-This particular problem can be solved using pattern matching, but the underlying limitation remains:
-implementing a coroutine generator cannot use helper functions as you cannot use `co_yield` in them.
-Likewise, it does not work with standard library algorithms.
+Every single lambda needs to be turned into a generator as well, so we can finally yield its elements:
+
+```cpp
+std::generator<int> tree_data(const tree& t)
+{
+    auto sub =
+        std::visit(overloaded([&](int data) -> std::generator<int> {
+            co_yield data;
+        }, [&](const std::vector<tree>& children) -> std::generator<int> {
+            for (auto& child : children)
+                co_yield std::ranges::elements_of(tree_data(child));
+        }), t.impl);
+    co_yield std::ranges::elements_of(sub);
+}
+```
+
+This particular problem can also be solved using pattern matching, but the underlying limitation remains:
+implementing a coroutine generator cannot use "normal" helper functions as you cannot use `co_yield` in them; they need to be turned into generators as well.
+If you can't control the helper functions, such as the case of standard library algorithms, you simply can't use them.
 
 ## Limitation to a single type
 
@@ -132,7 +156,7 @@ It is in some aspects even weaker than an input range -- it can only be iterated
 it cannot resume later on.
 However, it is enough for algorithms that require only a single loop, like `std::ranges::for_each`, `std::ranges::copy`, or `std::ranges::fold_left` (plus variants and fold-like algorithms like `std::ranges::any_of`).
 
-A generator ranges is implemented as a type with an overloaded `operator()` that takes another callable, a sink.
+A generator range is implemented as a type with an overloaded `operator()` that takes another callable, a sink.
 It will then use internal iteration invoking the sink with each argument.
 Early exit (i.e. `break`) is possible by returning `tc::break_` from the sink,
 which the `operator()` then detects, stops iteration, and forwards the result.
@@ -167,17 +191,20 @@ However, we can also yield values from nested functions:
 auto tree_data(const tree& t)
 {
     return [&](auto sink) {
-        auto flow = tc::continue_;
-        std::visit(overloaded([&](int data) {
-              flow = sink(data);
-          }, [&](const std::vector<tree>& children) {
-              for (auto& child : children)
-              {
-                  flow = tree_data(child)(sink);
-                  if (flow == tc::break_)
-                    break;
-              }
-          }), t.impl);
+        auto flow =
+            std::visit(overloaded([&](int data) {
+                // Forward break/exit.
+                return sink(data);
+            }, [&](const std::vector<tree>& children) {
+                for (auto& child : children)
+                {
+                    auto flow = tree_data(child)(sink);
+                    if (flow == tc::break_)
+                      // Forward early break and do actually break.
+                      return flow;
+                }
+                return tc::continue_;
+            }), t.impl);
         return flow;
     }
 }
@@ -353,7 +380,7 @@ The loop body is kept as-is, except for control flow statements which need to be
 * A `return @_expr_@;` is transformed to something that evaluates `@_expr_@` and stores it somewhere, before a `return @_implementation-defined_@` which has the same effect as `std::break_` but also causes the compiler to forward the `return` after the loop.
 * A `goto` that exits the range-based `for` loop is transformed to `return @_implementation-defined_@`, which has the same effect as `std::break_` but also causes the compiler to forward the `goto` after the loop.
 * A `throw` is kept as-is.
-* A `co_await`/`co_yield`/`co_return` is ill-formed.
+* A `co_await`/`co_yield`/`co_return` is ill-formed (but [see below](#coroutine-body) for a discussion about that).
 
 The return type of the lambda is `std::continue_t` or `std::break_t` if that is the only returned control-flow case, or `std::control_flow` otherwise.
 If the lambda exits with an exception or returns `std::break_` it must not be called again.
@@ -365,38 +392,6 @@ An example lowering is given on [godbolt](https://godbolt.org/z/MrqocfhfK).
 Note that the compiler may do a more efficient job during codegen than what we can express in C++.
 In particular, `return @_expr_@` must directly construct the expression in the return slot to enable copy elision.
 
-## Relaxing requirements for sink returns (alternative design)
-
-The implementation in think-cell allows arbitrary return types for the sink, not just `std::control_flow` and related types.
-If a type is not a control flow type including `void`, it is treated as `std::continue_`.
-That way, if a sink is written by hand or wraps an existing function, if it doesn't want an early return, it doesn't need to do anything.
-Otherwise, it would need to add an unnecessary `return std::continue_`.
-
-This complicates the implementation for sink calls, which now need to translate an arbitrary type (including void) to `std::continue_t` before branching.
-As such, it requires the addition of an additional standardized helper functions for that logic like `std::control_flow::invoke(sink, value)`, or standardized syntax sugar (see below).
-
-```cpp
-template <typename Sink, typename ... Args>
-constexpr auto std::control_flow::invoke(Sink&& sink, Args&&... args)
-{
-    using result = std::invoke_result_t<Sink&&, Args&&...>;
-    if constexpr (std::is_same_v<result, std::control_flow>
-               || std::is_same_v<result, std::continue_t>
-               || std::is_same_v<result, std::break_t>)
-    {
-        return std::invoke(std::forward<Sink>(sink), std::forward<Args>(args)...);
-    }
-    else
-    {
-        std::invoke(std::forward<Sink>(sink), std::forward<Args>(args)...);
-        return std::continue_;
-    }
-}
-```
-
-If a generator range is only used with the range-based `for` loop, this is not necessary as the compiler generated sink will always have the right type,
-but in think-cell's experience where generators can be used with arbitrary algorithms and their custom lambdas, it is very convenient if the work of adjusting the return type is moved from the caller to the generator implementation.
-
 ## Syntax sugar for sink calls (optional)
 
 The implementation of a generator will necessarily have code that invoke the sink and does an early return:
@@ -406,9 +401,14 @@ auto flow = sink(value);
 if (!flow) return flow;
 ```
 
-If the `sink` can return arbitrary types including `void` (see above), this requires even more boilerplate or a helper function to translate it first.
+This is annoying, but also precisely the pattern [@P2561R1] sets out to solve with its error propagation operator.
+If adopted, we can instead write:
 
-Some sort of syntax sugar for this pattern (including the translation to a `std::control_flow` type) would be helpful, such as a special `co_yield`-into statement:
+```cpp
+sink(value)??;
+```
+
+Alternatively, we could keep the association with coroutine generators and use a special `co_yield`-into statement:
 
 ```cpp
 co_yield(sink) value;
@@ -420,16 +420,12 @@ co_yield[sink] value;
 co_yield<sink> value;
 ```
 
-However, re-using `co_yield` in that way might result in parsing ambiguities with regular coroutine `co_yield`, so that paticular syntax might be infeasible.
-
-The pattern here of "check if result is an error and forward it with an early return if necessary" is error propagation,
-so it can be solved using the error propagation operator from [@P2561R1]: `sink(value)??`.
-However, `??` alone will not support the type translation to `std::control_flow`, so if that option is taken, it needs to be `std::control_flow::invoke(sink, value)??` or some similar helper function.
+However, re-using `co_yield` in that way might result in parsing ambiguities with regular coroutine `co_yield`, so that particular syntax might be unfeasible.
 
 ## `std::ranges` support (future paper)
 
 If there is interest in the feature, a separate paper will add support for generator ranges to the standard library.
-This includes concept machinery, turning views into generator ranges where appropriate for better iteration performance, and adding support for generator ranges to single-loop range algorithms like `std::ranges::for_each`, `std::ranges::copy`, or `std::ranges::fold_left` (plus variants and fold-like algorithms like `std::ranges::any_of`).
+This includes concepts for generator ranges, turning views into generator ranges for better iteration performance, and adding support for generator ranges to single-loop range algorithms like `std::ranges::for_each`, `std::ranges::copy`, or `std::ranges::fold_left` (plus variants and fold-like algorithms like `std::ranges::any_of`).
 
 # Open questions
 
@@ -461,6 +457,12 @@ However, we are open to a different spelling.
 An early draft of the paper used `operator for` instead of `operator()`, where `operator for` is a new overloadable operator.
 This can make it more obvious that a type has custom behavior when used with a range-based `for` loop.
 
+Using `operator for` means that lambdas no longer work as-is and would need to be wrapped into a type that has an `operator for` which calls the lambda.
+That works, but is also a bit unnecessary.
+Alternatively, a lambda that takes a sink and returns a type like `std::control_flow` could automatically get an `operator for` overload.
+Either the language provides one as member, or the standard library provides a generic non-member overload for callables.
+At that point, we might as well use `operator()` again though.
+
 ## `auto` in `for` loop
 
 What should happen if the `for` loop uses `auto` for the type of the loop variable?
@@ -471,7 +473,7 @@ for (auto x : generator123())
 ```
 
 With the specification of `operator()` it is very difficult for the compiler to figure out what is the actual value type of the `operator()` -- it has to look in the body to see what is passed to the callable.
-There is also no limitation to just one type; an implementation may invoke the sink with different types.
+There is also no limitation to only one type; an implementation may invoke the sink with different types.
 
 There are three approaches to avoid the deduction:
 
@@ -479,7 +481,26 @@ There are three approaches to avoid the deduction:
 2. Infer the type from somewhere else, maybe some trait that has to specialized or a member typedef given.
 3. Turn the body of the `for` loop into a generic lambda with an `auto` parameter instead of a fixed type.
 
-Option 3 is particular appealing as it allows iteration of types like `std::tuple`:
+Option 1 is annoying.
+Option 2 is not easy because the type of the range depends on the cv-ref qualifications of `*this`.
+think-cell uses `decltype()` of a member function call for that purpose:
+
+```cpp
+struct container
+{
+    // Non-const containers yield `int&`.
+    int& generator_output_type();  // no definition
+    // const containers yield `const int&`.
+    const int& generator_output_type() const; // no definition
+};
+
+template <typename T>
+using generator_output_type = decltype(std::declval<T>().generator_output_type());
+```
+
+However, adding an undefined member function might be a bit too weird for the standard.
+
+Option 3 has the side-effect of allowing iteration of types like `std::tuple`:
 
 ```cpp
 template <typename ... T>
@@ -506,6 +527,10 @@ for (auto elem : std::make_tuple(42, 3.14f, "hello"))
 ```
 
 This is a different way of implementing expansion statements [@P1306R1].
+
+Even if EWG doesn't want to support expansion statements that way, the library idiom of using `operator()` naturally supports multiple output types,
+even though the language `for` loop does not.
+Limiting the idiom just for the sake of the language feature is wrong -- we still might want to iterate tuples by calling `operator()` manually.
 
 ## `std::stacktrace` and `__func__`
 
@@ -565,16 +590,16 @@ There are three approaches here:
    Once the exception has left the `operator()`, the flag is reset.
    This makes it impossible to catch exceptions thrown by the sink until they're back in the syntactic scope.
 3. Make exceptions thrown inside the generated lambda implicitly re-thrown when caught in `operator()`.
-   Similar to 2, but `operator for` is allowed to see the exception, just not swallow them.
+   Similar to 2, but `operator for` is allowed to see the exception, just not to swallow them.
    After a `catch`, exceptions are automatically re-thrown.
 
 The problem with 2 is that a generator might change itself during iteration inside `operator()`.
 When an exception is thrown, it needs to detect that to restore its previous state.
-The problem with 3 is potential overhead caused by the extra exception machinery, which we don't want to pay just to guard against malicious actors.
+The problem with 3 is potential overhead caused by the extra exception machinery, which we don't want to pay only to guard against malicious actors.
 Keep in mind that the `operator()`, the call to the `sink`, and a `try`/`catch` surrounding the sink might be separated by an arbitrary amount of intermediate function calls, so it cannot be done statically.
 As such, the authors prefer option 1.
 
-## `co_await`/`co_yield`/`co_return` in `for` body
+## `co_await`/`co_yield`/`co_return` in `for` body {#coroutine-body}
 
 When a user `co_await`s or `co_yield`s inside the body of a generator-based `for` loop, we have a problem since we're no longer inside a coroutine,
 but a compiler-generated lambda.
@@ -583,7 +608,41 @@ To handle that properly both the compiler generated lambda and the `operator()` 
 While that could work for the compiler-generated lambda, it would be problematic for the `operator()`, as we now sometimes need `co_await` on the sink.
 This problem relates to the general problem of coroutines with generic code, and is best solved by a general solution for conditional `co_await` in generic code.
 
-We thus propose to make it ill-formed to use coroutine statements in the body of a generator-based `for` loop.
-Alternatively, we could instead silently fallback to the traditional range-based `for` loop which does not suffer from this problem.
+We thus propose to make it ill-formed to use coroutine statements in the body of a generator-based `for` loop (at least for now).
+Alternatively, we could instead silently fallback to the traditional iterator-based `for` loop which does not suffer from this problem.
 This works nicely with generic code, but requires that the type also has `begin()` and `end()` (otherwise it is ill-formed again).
+
+## Return type of sinks
+
+The implementation in think-cell allows arbitrary return types for the sink, not just `std::control_flow` and related types.
+If a type is not a control flow type including `void`, it is treated as `std::continue_`.
+That way, if a sink is written by hand or wraps an existing function, if it doesn't want an early return, it doesn't need to do anything.
+Otherwise, it would need to add an unnecessary `return std::continue_`.
+
+If a generator range is only used with the range-based `for` loop, this is not necessary as the compiler generated sink will always have the right type,
+but in think-cell's experience where generators can be used with arbitrary algorithms and their hand-written lambdas, it is very convenient if the work of adjusting the return type is moved from the caller to the generator implementation.
+
+Relaxing the return type complicates the implementation for sink calls, which now need to translate an arbitrary type (including void) to `std::continue_t` before branching.
+As such, it is useful to have a standardized helper function for that logic, e.g. a `std::control_flow::invoke(sink, value)`:
+
+```cpp
+template <typename Sink, typename ... Args>
+constexpr auto std::control_flow::invoke(Sink&& sink, Args&&... args)
+{
+    using result = std::invoke_result_t<Sink&&, Args&&...>;
+    if constexpr (std::is_same_v<result, std::control_flow>
+               || std::is_same_v<result, std::continue_t>
+               || std::is_same_v<result, std::break_t>)
+    {
+        return std::invoke(std::forward<Sink>(sink), std::forward<Args>(args)...);
+    }
+    else
+    {
+        std::invoke(std::forward<Sink>(sink), std::forward<Args>(args)...);
+        return std::continue_;
+    }
+}
+```
+
+Alternatively, the selected syntax sugar could be specified to do the translation as well.
 
