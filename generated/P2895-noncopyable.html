@@ -465,9 +465,9 @@ utility classes</h1>
 <h1 data-number="1" id="abstract"><span class="header-section-number">1</span> Abstract<a href="#abstract" class="self-link"></a></h1>
 <p>We propose the addition of
 <code class="sourceCode default">std::noncopyable</code> and
-<code class="sourceCode default">std::nonmoveable</code>, utility
-classes you can inherit form to make your class non-copyable and/or
-non-moveable.</p>
+<code class="sourceCode default">std::nonmovable</code>, utility classes
+you can inherit from to make your class non-copyable and/or
+non-movable.</p>
 <h1 data-number="2" id="motivation"><span class="header-section-number">2</span> Motivation<a href="#motivation" class="self-link"></a></h1>
 <p>Developers may want to declare that a class is a move-only type,
 i.e., that it is movable but non-copyable. This is often useful for RAII
@@ -609,7 +609,8 @@ deriving from either. Deriving from
 <code class="sourceCode default">nonmovable</code> therefore incurs no
 space or runtime overhead.</p>
 <h1 data-number="5" id="acknowledgements"><span class="header-section-number">5</span> Acknowledgements<a href="#acknowledgements" class="self-link"></a></h1>
-<p>Alisdair for the original paper <span class="citation" data-cites="N2675">[<a href="#ref-N2675" role="doc-biblioref">N2675</a>]</span>.</p>
+<p>We thank Alisdair Meredith for the original paper proposing to
+standardize the behavior of boost::noncopyable. <span class="citation" data-cites="N2675">[<a href="#ref-N2675" role="doc-biblioref">N2675</a>]</span>.</p>
 <h1 data-number="6" id="wording"><span class="header-section-number">6</span> Wording<a href="#wording" class="self-link"></a></h1>
 <p>Add to header <code class="sourceCode default">&lt;utility&gt;</code>
 synopsis in <span>22.2.1
@@ -617,13 +618,13 @@ synopsis in <span>22.2.1
 <div class="add" style="color: #006e28">
 
 <div class="sourceCode" id="cb4"><pre class="sourceCode default cpp"><code class="sourceCode default"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>// [utility.noncopyable], class noncopyable</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>namespace noncopyable-adl-namespace { </span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>namespace noncopyable-adl-namespace {</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>   struct noncopyable;</span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>}</span>
 <span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>using noncopyable-nonmovable-adl-namespace::noncopyable;</span>
 <span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>// [utility.nonmovable], class nonmovable</span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>namespace nonmovable-adl-namespace { </span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>namespace nonmovable-adl-namespace {</span>
 <span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>   struct nonmovable;</span>
 <span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>}</span>
 <span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>using nonmovable-adl-namespace::nonmovable;</span></code></pre></div>
@@ -640,7 +641,7 @@ common idioms.</p>
 <h3 class="unnumbered" id="x.1-class-noncopyable-utility.noncopyable">22.2.x.1 Class
 <code class="sourceCode default">noncopyable</code>
 [utility.noncopyable]<a href="#x.1-class-noncopyable-utility.noncopyable" class="self-link"></a></h3>
-<div class="sourceCode" id="cb5"><pre class="sourceCode default cpp"><code class="sourceCode default"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>namespace noncopyable-adl-namespace { </span>
+<div class="sourceCode" id="cb5"><pre class="sourceCode default cpp"><code class="sourceCode default"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>namespace noncopyable-adl-namespace {</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    struct noncopyable {</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>        noncopyable() = default;</span>
 <span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>        noncopyable(noncopyable&amp;&amp;) = default;</span>
@@ -659,24 +660,24 @@ dependent lookup <span>6.5.4
 no other names should be declared in this namespace. — <em>end
 note</em>]</p>
 <p>[<em>Example</em>:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode default cpp"><code class="sourceCode default"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>class file : std::noncopyable { </span>
+<div class="sourceCode" id="cb6"><pre class="sourceCode default cpp"><code class="sourceCode default"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>class file : std::noncopyable {</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>public:</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    file(std::string const&amp; strPath) </span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>     : fp( std::fopen(strPath.c_str(), &quot;w&quot;) ) </span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    file(std::string const&amp; strPath)</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>     : fp(std::fopen(strPath.c_str(), &quot;w&quot;))</span>
 <span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    {}</span>
 <span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    file(file&amp;&amp; f) : fp(std::exchange(f.fp, nullptr)) {}</span>
 <span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    file&amp; operator=(file&amp;&amp; f) { ... }</span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    ~file() { if(fp) std::fclose(fp); } </span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    ~file() { if(fp) std::fclose(fp); }</span>
 <span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>private:</span>
 <span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>    std::FILE* fp;</span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>}; </span></code></pre></div>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>};</span></code></pre></div>
 <p>— <em>end example</em>]</p>
 <h3 class="unnumbered" id="x.2-class-nonmovable-utility.nonmovable">22.2.x.2 Class
 <code class="sourceCode default">nonmovable</code>
 [utility.nonmovable]<a href="#x.2-class-nonmovable-utility.nonmovable" class="self-link"></a></h3>
-<div class="sourceCode" id="cb7"><pre class="sourceCode default cpp"><code class="sourceCode default"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>namespace nonmovable-adl-namespace { </span>
+<div class="sourceCode" id="cb7"><pre class="sourceCode default cpp"><code class="sourceCode default"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>namespace nonmovable-adl-namespace {</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    struct nonmovable {</span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>        nonmovable() = default;</span>
 <span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>        nonmovable(nonmovable const&amp;) = delete;</span>
@@ -687,18 +688,18 @@ note</em>]</p>
 <p><span class="marginalizedparent"><a class="marginalized">1</a></span>
 <code class="sourceCode default">nonmovable</code> is provided to
 simplify creation of classes that inhibit move and copy semantics.</p>
-<p>[<em>Note</em>: <code class="sourceCode default">nonmoveable</code>
-is provided in an unspecified nested namespace to limit argument
-dependent lookup <span>6.5.4
+<p>[<em>Note</em>: <code class="sourceCode default">nonmovable</code> is
+provided in an unspecified nested namespace to limit argument dependent
+lookup <span>6.5.4
 <a href="https://wg21.link/basic.lookup.argdep">[basic.lookup.argdep]</a></span>;
 no other names should be declared in this namespace. — <em>end
 note</em>]</p>
 <p>[<em>Example</em>:</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode default cpp"><code class="sourceCode default"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>class mutex : std::nonmovable { </span>
+<div class="sourceCode" id="cb8"><pre class="sourceCode default cpp"><code class="sourceCode default"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>class mutex : std::nonmovable {</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>public:</span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    mutex();</span>
 <span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    ~mutex();</span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>}; </span></code></pre></div>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>};</span></code></pre></div>
 <p>— <em>end example</em>]</p>
 </div>
 <h1 data-number="7" id="bibliography"><span class="header-section-number">7</span> References<a href="#bibliography" class="self-link"></a></h1>
