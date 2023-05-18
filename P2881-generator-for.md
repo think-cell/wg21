@@ -388,7 +388,44 @@ The return value of the lambda must be forwarded through the `operator()`.
 
 After the call to `operator()`, the compiler may insert additional code to handle a `return` or `goto` of the body, to ensure that control flow jumps to the desired location.
 
-An example lowering is given on [godbolt](https://godbolt.org/z/MrqocfhfK).
+::: cmptable
+> Example lowering.
+
+### User code
+
+```cpp
+for (int x : generator123())
+{
+    if (x == 0)
+        continue;
+    if (x == 2)
+        break;
+    std::printf("%d\n", x);
+}
+```
+
+### Lowered code
+
+```cpp
+{
+    auto __body = [&](int&& __element) -> std::control_flow {
+        int x = __element;
+        if (x == 0)
+            return std::continue_;
+        if (x == 2)
+            return std::break_;
+        std::printf("%d\n", x);
+        return std::continue_;
+    };
+
+    auto __flow = generator123()(__body);
+    (void)__flow;
+}
+```
+
+:::
+
+More example lowerings are given on [godbolt](https://godbolt.org/z/1bGYjYq3s).
 Note that the compiler may do a more efficient job during codegen than what we can express in C++.
 In particular, `return @_expr_@` must directly construct the expression in the return slot to enable copy elision.
 
@@ -479,7 +516,11 @@ There are three approaches to avoid the deduction:
 
 1. Make it ill-formed. When the user wants to use a generator-based `for` loop, they have to specify a type for the loop variable.
 2. Infer the type from somewhere else, maybe some trait that has to specialized or a member typedef given.
+   Note that we cannot use the return type of `operator()` as that is `std::control_flow` or related.
 3. Turn the body of the `for` loop into a generic lambda with an `auto` parameter instead of a fixed type.
+4. As above, but make the program ill-formed if the lambda would be instantiated with multiple different types.
+   In a way, the `auto` parameter in that particular compiler-generated lambda then would be more like the `auto` in a return type or variable declaration:
+   a way to name a specific, yet unknown type, and not a template.
 
 Option 1 is annoying.
 Option 2 is not easy because the type of the range depends on the cv-ref qualifications of `*this`.
@@ -528,9 +569,9 @@ for (auto elem : std::make_tuple(42, 3.14f, "hello"))
 
 This is a different way of implementing expansion statements [@P1306R1].
 
-Even if EWG doesn't want to support expansion statements that way, the library idiom of using `operator()` naturally supports multiple output types,
-even though the language `for` loop does not.
+Even if EWG doesn't want to support multiple output types for `for`, the library idiom of using `operator()` naturally supports it.
 Limiting the idiom just for the sake of the language feature is wrong -- we still might want to iterate tuples by calling `operator()` manually.
+It is better to just constrain the use in `for` but not the general spelling of the generator function, as done in option 4.
 
 ## `std::stacktrace` and `__func__`
 
