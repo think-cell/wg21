@@ -2,7 +2,7 @@
 title: "Generator-based for loop"
 subtitle: "Generator ranges without coroutine overhead"
 document: P2881R0
-date: today
+date: 2023-05-18
 audience: [EWG, EWGI]
 author:
   - name: Jonathan Müller

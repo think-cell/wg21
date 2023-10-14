@@ -1,7 +1,7 @@
 ---
 title: "noncopyable and nonmovable utility classes"
 document: P2895
-date: today
+date: 2023-05-17
 audience: LEWG
 author:
   - name: Sebastian Theophil
