@@ -1,0 +1,1670 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang xml:lang>
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="mpark/wg21" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="dcterms.date" content="2024-10-15" />
+  <title>\&lt;meta\&gt; should minimize standard library
+dependencies</title>
+  <style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.csl-block{margin-left: 1.5em;}
+ul.task-list{list-style: none;}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ background-color: #f6f8fa; }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span { } 
+code span.al { color: #ff0000; } 
+code span.an { } 
+code span.at { } 
+code span.bn { color: #9f6807; } 
+code span.bu { color: #9f6807; } 
+code span.cf { color: #00607c; } 
+code span.ch { color: #9f6807; } 
+code span.cn { } 
+code span.co { color: #008000; font-style: italic; } 
+code span.cv { color: #008000; font-style: italic; } 
+code span.do { color: #008000; } 
+code span.dt { color: #00607c; } 
+code span.dv { color: #9f6807; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #9f6807; } 
+code span.fu { } 
+code span.im { } 
+code span.in { color: #008000; } 
+code span.kw { color: #00607c; } 
+code span.op { color: #af1915; } 
+code span.ot { } 
+code span.pp { color: #6f4e37; } 
+code span.re { } 
+code span.sc { color: #9f6807; } 
+code span.ss { color: #9f6807; } 
+code span.st { color: #9f6807; } 
+code span.va { } 
+code span.vs { color: #9f6807; } 
+code span.wa { color: #008000; font-weight: bold; } 
+code.diff {color: #898887}
+code.diff span.va {color: #006e28}
+code.diff span.st {color: #bf0303}
+</style>
+  <style type="text/css">
+body {
+margin: 5em;
+font-family: serif;
+
+hyphens: auto;
+line-height: 1.35;
+text-align: justify;
+}
+@media screen and (max-width: 30em) {
+body {
+margin: 1.5em;
+}
+}
+div.wrapper {
+max-width: 60em;
+margin: auto;
+}
+ul {
+list-style-type: none;
+padding-left: 2em;
+margin-top: -0.2em;
+margin-bottom: -0.2em;
+}
+a {
+text-decoration: none;
+color: #4183C4;
+}
+a.hidden_link {
+text-decoration: none;
+color: inherit;
+}
+li {
+margin-top: 0.6em;
+margin-bottom: 0.6em;
+}
+h1, h2, h3, h4 {
+position: relative;
+line-height: 1;
+}
+a.self-link {
+position: absolute;
+top: 0;
+left: calc(-1 * (3.5rem - 26px));
+width: calc(3.5rem - 26px);
+height: 2em;
+text-align: center;
+border: none;
+transition: opacity .2s;
+opacity: .5;
+font-family: sans-serif;
+font-weight: normal;
+font-size: 83%;
+}
+a.self-link:hover { opacity: 1; }
+a.self-link::before { content: "§"; }
+ul > li:before {
+content: "\2014";
+position: absolute;
+margin-left: -1.5em;
+}
+:target { background-color: #C9FBC9; }
+:target .codeblock { background-color: #C9FBC9; }
+:target ul { background-color: #C9FBC9; }
+.abbr_ref { float: right; }
+.folded_abbr_ref { float: right; }
+:target .folded_abbr_ref { display: none; }
+:target .unfolded_abbr_ref { float: right; display: inherit; }
+.unfolded_abbr_ref { display: none; }
+.secnum { display: inline-block; min-width: 35pt; }
+.header-section-number { display: inline-block; min-width: 35pt; }
+.annexnum { display: block; }
+div.sourceLinkParent {
+float: right;
+}
+a.sourceLink {
+position: absolute;
+opacity: 0;
+margin-left: 10pt;
+}
+a.sourceLink:hover {
+opacity: 1;
+}
+a.itemDeclLink {
+position: absolute;
+font-size: 75%;
+text-align: right;
+width: 5em;
+opacity: 0;
+}
+a.itemDeclLink:hover { opacity: 1; }
+span.marginalizedparent {
+position: relative;
+left: -5em;
+}
+li span.marginalizedparent { left: -7em; }
+li ul > li span.marginalizedparent { left: -9em; }
+li ul > li ul > li span.marginalizedparent { left: -11em; }
+li ul > li ul > li ul > li span.marginalizedparent { left: -13em; }
+div.footnoteNumberParent {
+position: relative;
+left: -4.7em;
+}
+a.marginalized {
+position: absolute;
+font-size: 75%;
+text-align: right;
+width: 5em;
+}
+a.enumerated_item_num {
+position: relative;
+left: -3.5em;
+display: inline-block;
+margin-right: -3em;
+text-align: right;
+width: 3em;
+}
+div.para { margin-bottom: 0.6em; margin-top: 0.6em; text-align: justify; }
+div.section { text-align: justify; }
+div.sentence { display: inline; }
+span.indexparent {
+display: inline;
+position: relative;
+float: right;
+right: -1em;
+}
+a.index {
+position: absolute;
+display: none;
+}
+a.index:before { content: "⟵"; }
+
+a.index:target {
+display: inline;
+}
+.indexitems {
+margin-left: 2em;
+text-indent: -2em;
+}
+div.itemdescr {
+margin-left: 3em;
+}
+.bnf {
+font-family: serif;
+margin-left: 40pt;
+margin-top: 0.5em;
+margin-bottom: 0.5em;
+}
+.ncbnf {
+font-family: serif;
+margin-top: 0.5em;
+margin-bottom: 0.5em;
+margin-left: 40pt;
+}
+.ncsimplebnf {
+font-family: serif;
+font-style: italic;
+margin-top: 0.5em;
+margin-bottom: 0.5em;
+margin-left: 40pt;
+background: inherit; 
+}
+span.textnormal {
+font-style: normal;
+font-family: serif;
+white-space: normal;
+display: inline-block;
+}
+span.rlap {
+display: inline-block;
+width: 0px;
+}
+span.descr { font-style: normal; font-family: serif; }
+span.grammarterm { font-style: italic; }
+span.term { font-style: italic; }
+span.terminal { font-family: monospace; font-style: normal; }
+span.nonterminal { font-style: italic; }
+span.tcode { font-family: monospace; font-style: normal; }
+span.textbf { font-weight: bold; }
+span.textsc { font-variant: small-caps; }
+a.nontermdef { font-style: italic; font-family: serif; }
+span.emph { font-style: italic; }
+span.techterm { font-style: italic; }
+span.mathit { font-style: italic; }
+span.mathsf { font-family: sans-serif; }
+span.mathrm { font-family: serif; font-style: normal; }
+span.textrm { font-family: serif; }
+span.textsl { font-style: italic; }
+span.mathtt { font-family: monospace; font-style: normal; }
+span.mbox { font-family: serif; font-style: normal; }
+span.ungap { display: inline-block; width: 2pt; }
+span.textit { font-style: italic; }
+span.texttt { font-family: monospace; }
+span.tcode_in_codeblock { font-family: monospace; font-style: normal; }
+span.phantom { color: white; }
+
+span.math { font-style: normal; }
+span.mathblock {
+display: block;
+margin-left: auto;
+margin-right: auto;
+margin-top: 1.2em;
+margin-bottom: 1.2em;
+text-align: center;
+}
+span.mathalpha {
+font-style: italic;
+}
+span.synopsis {
+font-weight: bold;
+margin-top: 0.5em;
+display: block;
+}
+span.definition {
+font-weight: bold;
+display: block;
+}
+.codeblock {
+margin-left: 1.2em;
+line-height: 127%;
+}
+.outputblock {
+margin-left: 1.2em;
+line-height: 127%;
+}
+div.itemdecl {
+margin-top: 2ex;
+}
+code.itemdeclcode {
+white-space: pre;
+display: block;
+}
+span.textsuperscript {
+vertical-align: super;
+font-size: smaller;
+line-height: 0;
+}
+.footnotenum { vertical-align: super; font-size: smaller; line-height: 0; }
+.footnote {
+font-size: small;
+margin-left: 2em;
+margin-right: 2em;
+margin-top: 0.6em;
+margin-bottom: 0.6em;
+}
+div.minipage {
+display: inline-block;
+margin-right: 3em;
+}
+div.numberedTable {
+text-align: center;
+margin: 2em;
+}
+div.figure {
+text-align: center;
+margin: 2em;
+}
+table {
+border: 1px solid black;
+border-collapse: collapse;
+margin-left: auto;
+margin-right: auto;
+margin-top: 0.8em;
+text-align: left;
+hyphens: none; 
+}
+td, th {
+padding-left: 1em;
+padding-right: 1em;
+vertical-align: top;
+}
+td.empty {
+padding: 0px;
+padding-left: 1px;
+}
+td.left {
+text-align: left;
+}
+td.right {
+text-align: right;
+}
+td.center {
+text-align: center;
+}
+td.justify {
+text-align: justify;
+}
+td.border {
+border-left: 1px solid black;
+}
+tr.rowsep, td.cline {
+border-top: 1px solid black;
+}
+tr.even, tr.odd {
+border-bottom: 1px solid black;
+}
+tr.capsep {
+border-top: 3px solid black;
+border-top-style: double;
+}
+tr.header {
+border-bottom: 3px solid black;
+border-bottom-style: double;
+}
+th {
+border-bottom: 1px solid black;
+}
+span.centry {
+font-weight: bold;
+}
+div.table {
+display: block;
+margin-left: auto;
+margin-right: auto;
+text-align: center;
+width: 90%;
+}
+span.indented {
+display: block;
+margin-left: 2em;
+margin-bottom: 1em;
+margin-top: 1em;
+}
+ol.enumeratea { list-style-type: none; background: inherit; }
+ol.enumerate { list-style-type: none; background: inherit; }
+
+code.sourceCode > span { display: inline; }
+</style>
+  <link href="data:image/vnd.microsoft.icon;base64,AAABAAIAEBAAAAEAIABoBAAAJgAAACAgAAABACAAqBAAAI4EAAAoAAAAEAAAACAAAAABACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA////AIJEAACCRAAAgkQAAIJEAACCRAAAgkQAVoJEAN6CRADegkQAWIJEAACCRAAAgkQAAIJEAACCRAAA////AP///wCCRAAAgkQAAIJEAACCRAAsgkQAvoJEAP+CRAD/gkQA/4JEAP+CRADAgkQALoJEAACCRAAAgkQAAP///wD///8AgkQAAIJEABSCRACSgkQA/IJEAP99PQD/dzMA/3czAP99PQD/gkQA/4JEAPyCRACUgkQAFIJEAAD///8A////AHw+AFiBQwDqgkQA/4BBAP9/PxP/uZd6/9rJtf/bybX/upd7/39AFP+AQQD/gkQA/4FDAOqAQgBc////AP///wDKklv4jlEa/3o7AP+PWC//8+3o///////////////////////z7un/kFox/35AAP+GRwD/mVYA+v///wD///8A0Zpk+NmibP+0d0T/8evj///////+/fv/1sKz/9bCs//9/fr//////+/m2/+NRwL/nloA/5xYAPj///8A////ANKaZPjRmGH/5cKh////////////k149/3UwAP91MQD/lmQ//86rhv+USg3/m1YA/5hSAP+bVgD4////AP///wDSmmT4zpJY/+/bx///////8+TV/8mLT/+TVx//gkIA/5lVAP+VTAD/x6B//7aEVv/JpH7/s39J+P///wD///8A0ppk+M6SWP/u2sf///////Pj1f/Nj1T/2KFs/8mOUv+eWhD/lEsA/8aee/+0glT/x6F7/7J8Rvj///8A////ANKaZPjRmGH/48Cf///////+/v7/2qt//82PVP/OkFX/37KJ/86siv+USg7/mVQA/5hRAP+bVgD4////AP///wDSmmT40ppk/9CVXP/69O////////7+/v/x4M//8d/P//7+/f//////9u7n/6tnJf+XUgD/nFgA+P///wD///8A0ppk+NKaZP/RmWL/1qNy//r07///////////////////////+vXw/9akdP/Wnmn/y5FY/6JfFvj///8A////ANKaZFTSmmTo0ppk/9GYYv/Ql1//5cWm//Hg0P/x4ND/5cWm/9GXYP/RmGH/0ppk/9KaZOjVnmpY////AP///wDSmmQA0ppkEtKaZI7SmmT60ppk/9CWX//OkVb/zpFW/9CWX//SmmT/0ppk/NKaZJDSmmQS0ppkAP///wD///8A0ppkANKaZADSmmQA0ppkKtKaZLrSmmT/0ppk/9KaZP/SmmT/0ppkvNKaZCrSmmQA0ppkANKaZAD///8A////ANKaZADSmmQA0ppkANKaZADSmmQA0ppkUtKaZNzSmmTc0ppkVNKaZADSmmQA0ppkANKaZADSmmQA////AP5/AAD4HwAA4AcAAMADAACAAQAAgAEAAIABAACAAQAAgAEAAIABAACAAQAAgAEAAMADAADgBwAA+B8AAP5/AAAoAAAAIAAAAEAAAAABACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA////AP///wCCRAAAgkQAAIJEAACCRAAAgkQAAIJEAACCRAAAgkQAAIJEAACCRAAAgkQAAIJEAAyCRACMgkQA6oJEAOqCRACQgkQAEIJEAACCRAAAgkQAAIJEAACCRAAAgkQAAIJEAACCRAAAgkQAAIJEAACCRAAA////AP///wD///8A////AIJEAACCRAAAgkQAAIJEAACCRAAAgkQAAIJEAACCRAAAgkQAAIJEAACCRABigkQA5oJEAP+CRAD/gkQA/4JEAP+CRADqgkQAZoJEAACCRAAAgkQAAIJEAACCRAAAgkQAAIJEAACCRAAAgkQAAIJEAAD///8A////AP///wD///8AgkQAAIJEAACCRAAAgkQAAIJEAACCRAAAgkQAAIJEAACCRAA4gkQAwoJEAP+CRAD/gkQA/4JEAP+CRAD/gkQA/4JEAP+CRAD/gkQAxIJEADyCRAAAgkQAAIJEAACCRAAAgkQAAIJEAACCRAAAgkQAAP///wD///8A////AP///wCCRAAAgkQAAIJEAACCRAAAgkQAAIJEAACCRAAWgkQAmIJEAP+CRAD/gkQA/4JEAP+CRAD/gkQA/4JEAP+CRAD/gkQA/4JEAP+CRAD/gkQA/4JEAJyCRAAYgkQAAIJEAACCRAAAgkQAAIJEAACCRAAA////AP///wD///8A////AIJEAACCRAAAgkQAAIJEAACCRAAAgkQAdIJEAPCCRAD/gkQA/4JEAP+CRAD/gkQA/4JEAP+CRAD/gkQA/4JEAP+CRAD/gkQA/4JEAP+CRAD/gkQA/4JEAPSCRAB4gkQAAIJEAACCRAAAgkQAAIJEAAD///8A////AP///wD///8AgkQAAIJEAACCRAAAgkQASoJEANKCRAD/gkQA/4JEAP+CRAD/g0YA/39AAP9zLgD/bSQA/2shAP9rIQD/bSQA/3MuAP9/PwD/g0YA/4JEAP+CRAD/gkQA/4JEAP+CRADUgkQAToJEAACCRAAAgkQAAP///wD///8A////AP///wB+PwAAgkUAIoJEAKiCRAD/gkQA/4JEAP+CRAD/hEcA/4BBAP9sIwD/dTAA/5RfKv+viF7/vp56/76ee/+wiF7/lWAr/3YxAP9sIwD/f0AA/4RHAP+CRAD/gkQA/4JEAP+CRAD/gkQArIJEACaBQwAA////AP///wD///8A////AIBCAEBzNAD6f0EA/4NFAP+CRAD/gkQA/4VIAP92MwD/bSUA/6N1Tv/ezsL/////////////////////////////////38/D/6V3Uv9uJgD/dTEA/4VJAP+CRAD/gkQA/4JEAP+BQwD/fUAA/4FDAEj///8A////AP///wD///8AzJRd5qBlKf91NgD/dDUA/4JEAP+FSQD/cy4A/3YyAP/PuKP//////////////////////////////////////////////////////9K7qP94NQD/ciwA/4VJAP+CRAD/fkEA/35BAP+LSwD/mlYA6v///wD///8A////AP///wDdpnL/4qx3/8KJUv+PUhf/cTMA/3AsAP90LgD/4dK+/////////////////////////////////////////////////////////////////+TYxf91MAD/dTIA/31CAP+GRwD/llQA/6FcAP+gWwD8////AP///wD///8A////ANGZY/LSm2X/4ap3/92mcP+wdT3/byQA/8mwj////////////////////////////////////////////////////////////////////////////+LYxv9zLgP/jUoA/59bAP+hXAD/nFgA/5xYAPL///8A////AP///wD///8A0ppk8tKaZP/RmWL/1p9q/9ubXv/XqXj////////////////////////////7+fD/vZyG/6BxS/+gcUr/vJuE//r37f//////////////////////3MOr/5dQBf+dVQD/nVkA/5xYAP+cWAD/nFgA8v///wD///8A////AP///wDSmmTy0ppk/9KaZP/SmWP/yohJ//jo2P//////////////////////4NTG/4JDFf9lGAD/bSQA/20kAP9kGAD/fz8S/+Xb0f//////5NG9/6txN/+LOgD/m1QA/51aAP+cWAD/m1cA/5xYAP+cWADy////AP///wD///8A////ANKaZPLSmmT/0ppk/8+TWf/Unmv//v37//////////////////////+TWRr/VwsA/35AAP+ERgD/g0UA/4JGAP9lHgD/kFga/8KXX/+TRwD/jT4A/49CAP+VTQD/n10A/5xYAP+OQQD/lk4A/55cAPL///8A////AP///wD///8A0ppk8tKaZP/SmmT/y4tO/92yiP//////////////////////8NnE/8eCQP+rcTT/ez0A/3IyAP98PgD/gEMA/5FSAP+USwD/jj8A/5lUAP+JNwD/yqV2/694Mf+HNQD/jkAA/82rf/+laBj/jT4A8v///wD///8A////AP///wDSmmTy0ppk/9KaZP/LiUr/4byY///////////////////////gupX/0I5P/+Wuev/Lklz/l1sj/308AP+QSwD/ol0A/59aAP+aVQD/k0oA/8yoh///////+fXv/6pwO//Lp3v///////Pr4f+oay7y////AP///wD///8A////ANKaZPLSmmT/0ppk/8uJSv/hvJj//////////////////////+G7l//Jhkb/0ppk/96nc//fqXX/x4xO/6dkFP+QSQD/llEA/5xXAP+USgD/yaOA///////38uv/qG05/8ijdv//////8efb/6ZpLPL///8A////AP///wD///8A0ppk8tKaZP/SmmT/zIxO/9yxh///////////////////////7dbA/8iEQf/Sm2X/0Zlj/9ScZv/eqHf/2KJv/7yAQf+XTgD/iToA/5lSAP+JNgD/yKFv/611LP+HNQD/jT8A/8qmeP+kZRT/jT4A8v///wD///8A////AP///wDSmmTy0ppk/9KaZP/Pk1n/1J5q//78+//////////////////+/fv/1aFv/8iEQv/Tm2b/0ppl/9GZY//Wn2z/1pZc/9eldf/Bl2b/kUcA/4w9AP+OQAD/lUwA/59eAP+cWQD/jT8A/5ZOAP+eXADy////AP///wD///8A////ANKaZPLSmmT/0ppk/9KZY//KiEn/8d/P///////////////////////47+f/05tm/8iCP//KiEj/yohJ/8eCP//RmGH//vfy///////n1sP/rXQ7/4k4AP+TTAD/nVoA/5xYAP+cVwD/nFgA/5xYAPL///8A////AP///wD///8A0ppk8tKaZP/SmmT/0ptl/8uLTf/aq37////////////////////////////+/fz/6c2y/961jv/etY7/6Myx//78+v//////////////////////3MWv/5xXD/+ORAD/mFQA/51ZAP+cWAD/nFgA8v///wD///8A////AP///wDSmmTy0ppk/9KaZP/SmmT/0ppk/8mFRP/s1b//////////////////////////////////////////////////////////////////////////////+PD/0JFU/7NzMv+WUQD/kUsA/5tXAP+dWQDy////AP///wD///8A////ANKaZP/SmmT/0ppk/9KaZP/Sm2X/z5NZ/8yMT//z5NX/////////////////////////////////////////////////////////////////9Ofa/8yNUP/UmGH/36p5/8yTWv+qaSD/kksA/5ROAPz///8A////AP///wD///8A0ppk5NKaZP/SmmT/0ppk/9KaZP/TnGf/zY9T/82OUv/t1sD//////////////////////////////////////////////////////+7Yw//OkFX/zI5R/9OcZ//SmmP/26V0/9ymdf/BhUf/ol8R6P///wD///8A////AP///wDSmmQ80ppk9tKaZP/SmmT/0ppk/9KaZP/TnGj/zpFW/8qJSv/dson/8uHS//////////////////////////////////Lj0//etIv/y4lL/86QVf/TnGj/0ppk/9KaZP/RmWP/05xn/9ymdfjUnWdC////AP///wD///8A////ANKaZADSmmQc0ppkotKaZP/SmmT/0ppk/9KaZP/Tm2b/0Zli/8qJSf/NjlH/16Z3/+G8mP/myKr/5siq/+G8mP/Xp3f/zY5S/8qISf/RmGH/05tm/9KaZP/SmmT/0ppk/9KaZP/SmmSm0pljINWdaQD///8A////AP///wD///8A0ppkANKaZADSmmQA0ppkQtKaZMrSmmT/0ppk/9KaZP/SmmT/0ptl/9GYYf/Nj1P/y4lL/8qISP/KiEj/y4lK/82PU//RmGH/0ptl/9KaZP/SmmT/0ppk/9KaZP/SmmTO0ppkRtKaZADSmmQA0ppkAP///wD///8A////AP///wDSmmQA0ppkANKaZADSmmQA0ppkANKaZGzSmmTu0ppk/9KaZP/SmmT/0ppk/9KaZP/SmmT/0ppk/9KaZP/SmmT/0ppk/9KaZP/SmmT/0ppk/9KaZP/SmmTw0ppkcNKaZADSmmQA0ppkANKaZADSmmQA////AP///wD///8A////ANKaZADSmmQA0ppkANKaZADSmmQA0ppkANKaZBLSmmSQ0ppk/9KaZP/SmmT/0ppk/9KaZP/SmmT/0ppk/9KaZP/SmmT/0ppk/9KaZP/SmmT/0ppklNKaZBTSmmQA0ppkANKaZADSmmQA0ppkANKaZAD///8A////AP///wD///8A0ppkANKaZADSmmQA0ppkANKaZADSmmQA0ppkANKaZADSmmQy0ppkutKaZP/SmmT/0ppk/9KaZP/SmmT/0ppk/9KaZP/SmmT/0ppkvtKaZDbSmmQA0ppkANKaZADSmmQA0ppkANKaZADSmmQA0ppkAP///wD///8A////AP///wDSmmQA0ppkANKaZADSmmQA0ppkANKaZADSmmQA0ppkANKaZADSmmQA0ppkXNKaZODSmmT/0ppk/9KaZP/SmmT/0ppk5NKaZGDSmmQA0ppkANKaZADSmmQA0ppkANKaZADSmmQA0ppkANKaZADSmmQA////AP///wD///8A////ANKaZADSmmQA0ppkANKaZADSmmQA0ppkANKaZADSmmQA0ppkANKaZADSmmQA0ppkBtKaZIbSmmTo0ppk6tKaZIrSmmQK0ppkANKaZADSmmQA0ppkANKaZADSmmQA0ppkANKaZADSmmQA0ppkANKaZAD///8A////AP/8P///+B///+AH//+AAf//AAD//AAAP/AAAA/gAAAHwAAAA8AAAAPAAAADwAAAA8AAAAPAAAADwAAAA8AAAAPAAAADwAAAA8AAAAPAAAADwAAAA8AAAAPAAAADwAAAA+AAAAfwAAAP/AAAP/8AAP//gAH//+AH///4H////D//" rel="icon" />
+  
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<div class="wrapper">
+<header id="title-block-header">
+<h1 class="title" style="text-align:center">&lt;meta&gt; should minimize
+standard library dependencies</h1>
+<table style="border:none;float:right">
+  <tr>
+    <td>Document #:</td>
+    <td>P4329R0</td>
+  </tr>
+  <tr>
+    <td>Date:</td>
+    <td>2024-10-15</td>
+  </tr>
+  <tr>
+    <td style="vertical-align:top">Project:</td>
+    <td>Programming Language C++</td>
+  </tr>
+  <tr>
+    <td style="vertical-align:top">Audience:</td>
+    <td>
+      LEWG<br>
+    </td>
+  </tr>
+  <tr>
+    <td style="vertical-align:top">Reply-to:</td>
+    <td>
+      Jonathan Müller (think-cell)<br>&lt;<a href="mailto:foonathan@jonathanmueller.dev" class="email">foonathan@jonathanmueller.dev</a>&gt;<br>
+    </td>
+  </tr>
+</table>
+</header>
+<div style="clear:both">
+<div id="TOC" role="doc-toc">
+<h1 id="toctitle">Contents</h1>
+<ul>
+<li><a href="#abstract" id="toc-abstract"><span class="toc-section-number">1</span> Abstract</a></li>
+<li><a href="#background" id="toc-background"><span class="toc-section-number">2</span> Background</a></li>
+<li><a href="#motivation" id="toc-motivation"><span class="toc-section-number">3</span> Motivation</a></li>
+<li><a href="#implementation-experience" id="toc-implementation-experience"><span class="toc-section-number">4</span> Implementation experience</a></li>
+<li><a href="#baseline-depending-on-initializer_list-compare-and-stdsize_t-is-perfectly-fine" id="toc-baseline-depending-on-initializer_list-compare-and-stdsize_t-is-perfectly-fine"><span class="toc-section-number">5</span> Baseline: Depending on
+<code class="sourceCode default">&lt;initializer_list&gt;</code>,
+<code class="sourceCode default">&lt;compare&gt;</code> and
+<code class="sourceCode default">std::size_t</code> is perfectly
+fine</a></li>
+<li><a href="#poll-0-remove-the-list-of-includes-from-the-wording" id="toc-poll-0-remove-the-list-of-includes-from-the-wording"><span class="toc-section-number">6</span> Poll 0: Remove the list of includes
+from the wording</a>
+<ul>
+<li><a href="#user-impact" id="toc-user-impact"><span class="toc-section-number">6.1</span> User impact</a></li>
+<li><a href="#implementation-impact" id="toc-implementation-impact"><span class="toc-section-number">6.2</span> Implementation impact</a></li>
+<li><a href="#wording" id="toc-wording"><span class="toc-section-number">6.3</span> Wording</a></li>
+</ul></li>
+<li><a href="#range-concepts" id="toc-range-concepts"><span class="toc-section-number">7</span> Range concepts</a>
+<ul>
+<li><a href="#poll-1.1-make-the-reflection_range-concept-exposition-only" id="toc-poll-1.1-make-the-reflection_range-concept-exposition-only"><span class="toc-section-number">7.1</span> Poll 1.1: Make the
+<code class="sourceCode default">reflection_range</code> concept
+exposition-only</a></li>
+<li><a href="#user-impact-1" id="toc-user-impact-1"><span class="toc-section-number">7.2</span> User impact</a></li>
+<li><a href="#implementation-impact-1" id="toc-implementation-impact-1"><span class="toc-section-number">7.3</span> Implementation impact</a>
+<ul>
+<li><a href="#wording-1" id="toc-wording-1"><span class="toc-section-number">7.3.1</span> Wording</a></li>
+</ul></li>
+<li><a href="#poll-1.2-change-the-_reflection_range_-concept-to-match-language-semantics" id="toc-poll-1.2-change-the-_reflection_range_-concept-to-match-language-semantics"><span class="toc-section-number">7.4</span> Poll 1.2: Change the
+<code class="sourceCode default"><em>reflection_range</em></code>
+concept to match language semantics</a></li>
+<li><a href="#user-impact-2" id="toc-user-impact-2"><span class="toc-section-number">7.5</span> User impact</a></li>
+<li><a href="#implementation-impact-2" id="toc-implementation-impact-2"><span class="toc-section-number">7.6</span> Implementation impact</a>
+<ul>
+<li><a href="#wording-2" id="toc-wording-2"><span class="toc-section-number">7.6.1</span> Wording</a></li>
+</ul></li>
+<li><a href="#poll-1.3-replace-rangesinput_range" id="toc-poll-1.3-replace-rangesinput_range"><span class="toc-section-number">7.7</span> Poll 1.3: Replace
+<code class="sourceCode default">ranges::input_range</code></a></li>
+<li><a href="#user-impact-3" id="toc-user-impact-3"><span class="toc-section-number">7.8</span> User impact</a></li>
+<li><a href="#implementation-impact-3" id="toc-implementation-impact-3"><span class="toc-section-number">7.9</span> Implementation impact</a>
+<ul>
+<li><a href="#wording-3" id="toc-wording-3"><span class="toc-section-number">7.9.1</span> Wording</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#poll-2-replace-stdvector-by-new-stdmetainfo_array" id="toc-poll-2-replace-stdvector-by-new-stdmetainfo_array"><span class="toc-section-number">8</span> Poll 2: Replace
+<code class="sourceCode default">std::vector</code> by new
+<code class="sourceCode default">std::meta::info_array</code></a>
+<ul>
+<li><a href="#user-impact-4" id="toc-user-impact-4"><span class="toc-section-number">8.1</span> User impact</a></li>
+<li><a href="#implementation-impact-4" id="toc-implementation-impact-4"><span class="toc-section-number">8.2</span> Implementation impact</a></li>
+<li><a href="#wording-4" id="toc-wording-4"><span class="toc-section-number">8.3</span> Wording</a></li>
+</ul></li>
+<li><a href="#poll-3-replace-stdspan-by-stdinitializer_list" id="toc-poll-3-replace-stdspan-by-stdinitializer_list"><span class="toc-section-number">9</span> Poll 3: Replace
+<code class="sourceCode default">std::span</code> by
+<code class="sourceCode default">std::initializer_list</code></a>
+<ul>
+<li><a href="#user-impact-5" id="toc-user-impact-5"><span class="toc-section-number">9.1</span> User impact</a></li>
+<li><a href="#implementation-impact-5" id="toc-implementation-impact-5"><span class="toc-section-number">9.2</span> Implementation impact</a></li>
+<li><a href="#wording-5" id="toc-wording-5"><span class="toc-section-number">9.3</span> Wording</a></li>
+</ul></li>
+<li><a href="#replace-stdu8string_view" id="toc-replace-stdu8string_view"><span class="toc-section-number">10</span> Replace
+<code class="sourceCode default">std::[u8]string_view</code></a>
+<ul>
+<li><a href="#poll-4.1-replace-stdu8string_view-in-argument-positions-by-a-generic-argument" id="toc-poll-4.1-replace-stdu8string_view-in-argument-positions-by-a-generic-argument"><span class="toc-section-number">10.1</span> Poll 4.1 Replace
+<code class="sourceCode default">std::[u8]string_view</code> in argument
+positions by a generic argument</a>
+<ul>
+<li><a href="#user-impact-6" id="toc-user-impact-6"><span class="toc-section-number">10.1.1</span> User impact</a></li>
+<li><a href="#implementation-impact-6" id="toc-implementation-impact-6"><span class="toc-section-number">10.1.2</span> Implementation impact</a></li>
+<li><a href="#wording-if-poll-1.3-has-no-consensus" id="toc-wording-if-poll-1.3-has-no-consensus"><span class="toc-section-number">10.1.3</span> Wording (if poll 1.3 has no
+consensus)</a></li>
+<li><a href="#wording-if-poll-1.3-has-consensus" id="toc-wording-if-poll-1.3-has-consensus"><span class="toc-section-number">10.1.4</span> Wording (if poll 1.3 has
+consensus)</a></li>
+</ul></li>
+<li><a href="#poll-4.2-replace-stdu8string_view-as-return-type-with-const-char8_t" id="toc-poll-4.2-replace-stdu8string_view-as-return-type-with-const-char8_t"><span class="toc-section-number">10.2</span> Poll 4.2: Replace
+<code class="sourceCode default">std::[u8]string_view</code> as return
+type with <code class="sourceCode default">const char[8_t]*</code></a>
+<ul>
+<li><a href="#user-impact-7" id="toc-user-impact-7"><span class="toc-section-number">10.2.1</span> User impact</a></li>
+<li><a href="#implementation-impact-7" id="toc-implementation-impact-7"><span class="toc-section-number">10.2.2</span> Implementation impact</a></li>
+<li><a href="#wording-6" id="toc-wording-6"><span class="toc-section-number">10.2.3</span> Wording</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#poll-5-re-design-data_member_spec" id="toc-poll-5-re-design-data_member_spec"><span class="toc-section-number">11</span> Poll 5: Re-design
+<code class="sourceCode default">data_member_spec</code></a>
+<ul>
+<li><a href="#proposed-design" id="toc-proposed-design"><span class="toc-section-number">11.1</span> Proposed Design</a></li>
+<li><a href="#user-impact-8" id="toc-user-impact-8"><span class="toc-section-number">11.2</span> User impact</a></li>
+<li><a href="#implementation-impact-8" id="toc-implementation-impact-8"><span class="toc-section-number">11.3</span> Implementation impact</a></li>
+<li><a href="#wording-7" id="toc-wording-7"><span class="toc-section-number">11.4</span> Wording</a></li>
+</ul></li>
+<li><a href="#bibliography" id="toc-bibliography"><span class="toc-section-number">12</span> References</a></li>
+</ul>
+</div>
+<h1 data-number="1" id="abstract"><span class="header-section-number">1</span> Abstract<a href="#abstract" class="self-link"></a></h1>
+<p><span class="citation" data-cites="P2996">[<a href="#ref-P2996" role="doc-biblioref">P2996R7</a> - Reflection for C++26]</span> requires
+library support in the form of the
+<code class="sourceCode default">&lt;meta&gt;</code> header. As
+specified, this library API requires other standard library facilities
+such as <code class="sourceCode default">std::vector</code>,
+<code class="sourceCode default">std::string_view</code>, and
+<code class="sourceCode default">std::optional</code>. We propose
+minimizing these standard library facilities to ensure more wide-spread
+adoption. In our testing, the proposed changes have only minimal impact
+on user code.</p>
+<h1 data-number="2" id="background"><span class="header-section-number">2</span> Background<a href="#background" class="self-link"></a></h1>
+<p><span class="citation" data-cites="P2996">[<a href="#ref-P2996" role="doc-biblioref">P2996R7</a>]</span> adds reflection library support
+in form of the <code class="sourceCode default">&lt;meta&gt;</code>
+header. The functions introduced there are essentially wrappers around
+compiler built-ins and thus cannot be implemented by users: People that
+want to use reflection have to use
+<code class="sourceCode default">&lt;meta&gt;</code> or directly reach
+for the compiler built-ins.
+<code class="sourceCode default">&lt;meta&gt;</code> thus has the same
+status as <code class="sourceCode default">&lt;type_traits&gt;</code>,
+<code class="sourceCode default">&lt;coroutine&gt;</code>,
+<code class="sourceCode default">&lt;initializer_list&gt;</code>, and
+<code class="sourceCode default">&lt;source_location&gt;</code>. Yet,
+unlike those headers, which carefully avoided standard library
+dependencies, <code class="sourceCode default">&lt;meta&gt;</code> does
+not.</p>
+<p>Right now, it is specified to include:</p>
+<ul>
+<li><code class="sourceCode default">&lt;initializer_list&gt;</code></li>
+<li><code class="sourceCode default">&lt;ranges&gt;</code></li>
+<li><code class="sourceCode default">&lt;string_view&gt;</code></li>
+<li><code class="sourceCode default">&lt;vector&gt;</code></li>
+</ul>
+<p>In addition, the interface requires:</p>
+<ul>
+<li><code class="sourceCode default">std::size_t</code> in various
+places</li>
+<li><code class="sourceCode default">&lt;compare&gt;</code> (for
+<code class="sourceCode default">member_offsets</code> defaulted
+comparison operator)</li>
+<li><code class="sourceCode default">std::optional</code> (in
+<code class="sourceCode default">data_member_options_t</code>)</li>
+<li><code class="sourceCode default">std::span</code> (in
+<code class="sourceCode default">define_static_array</code>)</li>
+</ul>
+<p>This means every implementation of
+<code class="sourceCode default">&lt;meta&gt;</code> is required to
+include the specified headers, and provide the definitions for the
+specified types. In addition, the compiler needs to be able to construct
+and manipulate objects of various standard library types at
+compile-time.</p>
+<h1 data-number="3" id="motivation"><span class="header-section-number">3</span> Motivation<a href="#motivation" class="self-link"></a></h1>
+<p>Reflection is primarily a language feature that requires some
+standard library APIs. However, the C++ language has more users than the
+C++ standard library; developers in some domains (e.g. gamedev) make
+heavy use of C++ but avoid using the standard library. It is not for us
+in the committee to say whether they are justified in their reasons, but
+we have a duty to represent the interests of all our users and not just
+the subset of users that have representation in WG21. If we can better
+support everyone at minimal cost, we should do so or risk seeming even
+more out of touch.</p>
+<p>To that end, the <code class="sourceCode default">&lt;meta&gt;</code>
+header should minimize standard library dependencies. This has the
+following advantages:</p>
+<ul>
+<li><p><strong>Better compile-times due to reduced header
+inclusion:</strong> A translation unit that does not require
+<code class="sourceCode default">&lt;ranges&gt;</code> or
+<code class="sourceCode default">&lt;vector&gt;</code> should not be
+forced to pay the (significant!) price for including them. This is
+especially important as reflection by design has to be used in a header
+file, and we anticipate wide-spread use of reflection in core utility
+libraries included in most translation units. If this comes with the
+entirety of <code class="sourceCode default">&lt;ranges&gt;</code>, this
+can cause significant increases in compile-time for projects that have
+not adopted it.</p>
+<p>For example, <span class="citation" data-cites="lexy">[<a href="#ref-lexy" role="doc-biblioref">lexy</a>]</span> is a C++ parser
+combinator library which avoids using standard library headers in the
+core library code as the metaprogramming alone makes compile-times slow
+enough. Right now, a clean rebuild takes 61.979 s ± 1.646 s. Including
+<code class="sourceCode default">&lt;ranges&gt;</code>,
+<code class="sourceCode default">&lt;vector&gt;</code> and
+<code class="sourceCode default">&lt;string_view&gt;</code> in a core
+header file, where reflection might be used to replace
+<code class="sourceCode default">__PRETTY_FUNCTION__</code> hacks,
+increases it to 86.786 s ± 0.468 s. Actually starting to use reflection
+features will slow it down further. This is makes reflection
+unusable.</p>
+<p>Modules may solve this problem in the long-term, but adopting modules
+requires changes to the build system, which makes it more difficult than
+“just” updating the compiler to start using reflection. It is not
+entirely unreasonable to think that some companies will start using
+reflection before they start using modules.</p></li>
+<li><p><strong>Better compile-times due to simpler API types:</strong>
+All reflection APIs are
+<code class="sourceCode default">consteval</code>, so if a function
+e.g. returns a <code class="sourceCode default">std::vector</code>, the
+compiler has to construct this object at compile-time. This is
+expensive, as the memory layout and behavior of
+<code class="sourceCode default">std::vector</code> is controlled by
+standard library implementations the compiler frontend does not
+necessarily have full control over. If the result type were a custom
+type in control of the compiler instead, compiler implementers can pick
+an efficient representation that is easier to work with at
+compile-time.</p>
+<p>As a concrete example,
+<code class="sourceCode default">std::meta::members_of()</code> returns
+a <code class="sourceCode default">std::vector&lt;std::meta::info&gt;</code>. In
+the <span class="citation" data-cites="bloomberg-clang">[<a href="#ref-bloomberg-clang" role="doc-biblioref">bloomberg-clang</a>]</span> implementation, the
+underlying compiler API essentially exposes a
+<code class="sourceCode default">begin()</code> +
+<code class="sourceCode default">next()</code> function that is wrapped
+into a range type and passed to
+<code class="sourceCode default">std::vector</code>’s constructor. The
+compile-time interpreter then needs to allocate compile-time memory and
+simulate iterator machinery to construct a
+<code class="sourceCode default">std::vector</code> object. We propose
+that the API instead returns a
+<code class="sourceCode default">std::meta::info_array</code> whose
+layout is completely in control by the compiler. Then the compiler can
+allocate an array of
+<code class="sourceCode default">std::meta::info</code> objects using
+its own implementation, and not C++ code in an interpreter, and simply
+expose a pointer to that array.</p></li>
+<li><p><strong>You do not pay for what you do not use:</strong> Most use
+cases of
+e.g. <code class="sourceCode default">std::meta::members_of()</code>
+just call it and iterate over it. Yet they have to pay for a full copy
+of the member list living in a
+<code class="sourceCode default">std::vector</code> that is immediately
+destroyed afterwards. This copy is necessary in the general case as
+querying properties of an entity at different points in a translation
+unit can result in different results (e.g. due to incomplete types that
+become complete). But if you immediately iterate over it, the copy is an
+unnecessary cost.</p>
+<p>With a custom result type, a smart compiler implementation can employ
+copy-on-write techniques to avoid unnecessary copies.</p></li>
+<li><p><strong>Precedence:</strong> <code class="sourceCode default">std::source_location::file_name()</code> does
+not return a <code class="sourceCode default">std::string_view</code>,
+but a <code class="sourceCode default">const char*</code> instead.
+Proposed <code class="sourceCode default">std::contracts::contract_violation::comment()</code>
+does not return a
+<code class="sourceCode default">std::string_view</code>, but a
+<code class="sourceCode default">const char*</code> instead. So why
+should
+<code class="sourceCode default">std::meta::identifier_of()</code>
+return a
+<code class="sourceCode default">std::string_view</code>?</p></li>
+<li><p><strong>Minimal downsides:</strong> The proposed changes have
+minimal negative impact on user code, so the cost of applying them is
+not high.</p></li>
+</ul>
+<p>We therefore propose that
+<code class="sourceCode default">&lt;meta&gt;</code> should minimize
+standard library dependencies. In this paper, we exhaustively enumerate
+every dependency it has and suggest an alternative. Note that we are not
+proposing to force the implementation to avoid standard library
+dependencies in their implementations. We are just making it possible
+for them to do so.</p>
+<p>All wording in this paper is relative to <span class="citation" data-cites="P2996">[<a href="#ref-P2996" role="doc-biblioref">P2996R7</a>]</span>.</p>
+<h1 data-number="4" id="implementation-experience"><span class="header-section-number">4</span> Implementation experience<a href="#implementation-experience" class="self-link"></a></h1>
+<p>For the purposes of testing the impact on user code, some of the
+proposed changes have been implemented by modifying the
+<code class="sourceCode default">&lt;meta&gt;</code> header of <span class="citation" data-cites="bloomberg-clang">[<a href="#ref-bloomberg-clang" role="doc-biblioref">bloomberg-clang</a>]</span>. These changes are:</p>
+<ul>
+<li>Poll 2: Replacing
+<code class="sourceCode default">std::vector</code> by
+<code class="sourceCode default">std::meta::info_array</code>. The
+implementation still uses
+<code class="sourceCode default">std::vector</code> internally, but the
+interface impact becomes visible.</li>
+<li>Poll 4.2: Replacing
+<code class="sourceCode default">std::[u8]string_view</code> in return
+positions by
+<code class="sourceCode default">const char[8_t]*</code>.</li>
+</ul>
+<p>Poll 1.1 has obvious user impact and does not need to be
+investigated; polls 1.2, 1.3, and 4.1 are non-breaking changes that
+widen the interface contract; poll 3 is potentially a breaking change
+but requires compiler support to implement; poll 5 is an obvious
+breaking change that provides equivalent convenience and does not need
+to be investigated.</p>
+<p>The modified <code class="sourceCode default">&lt;meta&gt;</code>
+header is available here: <span class="citation" data-cites="prototype-impl">[<a href="#ref-prototype-impl" role="doc-biblioref">prototype-impl</a>]</span></p>
+<p>We investigated the following examples from <span class="citation" data-cites="P2996">[<a href="#ref-P2996" role="doc-biblioref">P2996R7</a>]</span> by replacing the <code class="sourceCode default">#include &lt;experimental/meta&gt;</code>
+with an <code class="sourceCode default">#include</code> of the above
+implementation:</p>
+<ul>
+<li><a href="https://godbolt.org/z/TjaYrvz67">enum to string</a> (no
+change needed)</li>
+<li><a href="https://godbolt.org/z/xexYdhYYa">parsing command-line
+options</a> (no change needed)</li>
+<li><a href="https://godbolt.org/z/n85PxW7a9">a simpler tuple type</a>
+(no change needed)</li>
+<li><a href="https://godbolt.org/z/Tn664Gf5d">a simpler variant type</a>
+(no change needed)</li>
+<li><a href="https://godbolt.org/z/58T3fhd35">struct to struct of
+arrays</a> (replace hard-coded type by
+<code class="sourceCode default">auto</code>)</li>
+<li><a href="https://godbolt.org/z/994ood5s4">parsing command-line
+options II</a> (no change needed)</li>
+<li><a href="https://godbolt.org/z/P3jTv3jo9">a universal formatter</a>
+(no change needed)</li>
+<li><a href="https://godbolt.org/z/bMs3P1M3z">converting a struct to
+tuple</a> (no change needed)</li>
+<li><a href="https://godbolt.org/z/qzKGrjjdY">implementing tuple_cat</a>
+(note: required adjustment unrelated to this paper)</li>
+<li><a href="https://godbolt.org/z/n38TE7nTj">named tuple</a> (no change
+needed)</li>
+</ul>
+<p>Similarly, we investigated the following examples of <span class="citation" data-cites="daveed-keynote">[<a href="#ref-daveed-keynote" role="doc-biblioref">daveed-keynote</a>]</span>:</p>
+<ul>
+<li><a href="https://godbolt.org/z/76srjM8dn">tuple implementation</a>
+(no change needed)</li>
+<li><a href="https://godbolt.org/z/YrEf4TM1x">command-line argument
+parsing</a> (additional <code class="sourceCode default">std::ranges::to&lt;std::vector&gt;</code>
+needed)</li>
+</ul>
+<p>We also manually investigated the reflection implementation of <span class="citation" data-cites="daw_json_link">[<a href="#ref-daw_json_link" role="doc-biblioref">daw_json_link</a>]</span>, which requires an
+additional <code class="sourceCode default">std::ranges::to&lt;std::vector&gt;</code> in
+the implementation of a reflection function that has since been added to
+<span class="citation" data-cites="P2996">[<a href="#ref-P2996" role="doc-biblioref">P2996R7</a>]</span>.</p>
+<h1 data-number="5" id="baseline-depending-on-initializer_list-compare-and-stdsize_t-is-perfectly-fine"><span class="header-section-number">5</span> Baseline: Depending on
+<code class="sourceCode default">&lt;initializer_list&gt;</code>,
+<code class="sourceCode default">&lt;compare&gt;</code> and
+<code class="sourceCode default">std::size_t</code> is perfectly fine<a href="#baseline-depending-on-initializer_list-compare-and-stdsize_t-is-perfectly-fine" class="self-link"></a></h1>
+<p>Those facilities are other compiler interface headers that are
+perfectly fine to use. We do not propose removing those
+dependencies.</p>
+<h1 data-number="6" id="poll-0-remove-the-list-of-includes-from-the-wording"><span class="header-section-number">6</span> Poll 0: Remove the list of
+includes from the wording<a href="#poll-0-remove-the-list-of-includes-from-the-wording" class="self-link"></a></h1>
+<p>The wording requires an include of
+<code class="sourceCode default">&lt;ranges&gt;</code> but the interface
+only requires a couple of concepts. Yet, because it is specified in the
+wording, every implementation, even ones that partition their headers to
+avoid unnecessary dependencies like libc++, have to include
+<code class="sourceCode default">&lt;ranges&gt;</code>, and not just the
+smaller internal header that defines the necessary concepts.</p>
+<p>Removing the requirement gives implementations more freedoms at the
+cost of users having to include the headers themselves when they need
+those features. But it is likely that users which heavily use
+e.g. <code class="sourceCode default">&lt;ranges&gt;</code> will have it
+included already anyway. However, users that don’t use
+<code class="sourceCode default">&lt;ranges&gt;</code> will not have to
+pay the extra cost of the include. As noted in the motivation, these
+includes alone caused a 40% increase in compile-time for <span class="citation" data-cites="lexy">[<a href="#ref-lexy" role="doc-biblioref">lexy</a>]</span>.</p>
+<p>Requiring the include of
+<code class="sourceCode default">&lt;initializer_list&gt;</code> is not
+a big problem and is common for other headers.</p>
+<h2 data-number="6.1" id="user-impact"><span class="header-section-number">6.1</span> User impact<a href="#user-impact" class="self-link"></a></h2>
+<p>Users that included
+<code class="sourceCode default">&lt;meta&gt;</code> now also need to
+ensure they have <code class="sourceCode default">&lt;ranges&gt;</code>,
+<code class="sourceCode default">&lt;vector&gt;</code>, or
+<code class="sourceCode default">&lt;string_view&gt;</code> included if
+they want to use declarations from those headers that aren’t already
+used in <code class="sourceCode default">&lt;meta&gt;</code>’s
+interface.</p>
+<h2 data-number="6.2" id="implementation-impact"><span class="header-section-number">6.2</span> Implementation impact<a href="#implementation-impact" class="self-link"></a></h2>
+<p>None. An implementation can still include whatever headers they
+want.</p>
+<h2 data-number="6.3" id="wording"><span class="header-section-number">6.3</span> Wording<a href="#wording" class="self-link"></a></h2>
+<p>Modify the new subsection in 21 [meta] after 21.3 [type.traits]:</p>
+<p><strong>Header <code class="sourceCode default">&lt;meta&gt;</code>
+synopsis</strong></p>
+<div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode diff"><code class="sourceCode diff"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>#include &lt;initializer_list&gt;</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="st">-#include &lt;ranges&gt;</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="st">-#include &lt;string_view&gt;</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="st">-#include &lt;vector&gt;</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>namespace std::meta {</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>…</span></code></pre></div>
+</div>
+<h1 data-number="7" id="range-concepts"><span class="header-section-number">7</span> Range concepts<a href="#range-concepts" class="self-link"></a></h1>
+<h2 data-number="7.1" id="poll-1.1-make-the-reflection_range-concept-exposition-only"><span class="header-section-number">7.1</span> Poll 1.1: Make the
+<code class="sourceCode default">reflection_range</code> concept
+exposition-only<a href="#poll-1.1-make-the-reflection_range-concept-exposition-only" class="self-link"></a></h2>
+<p>The wording defines a concept
+<code class="sourceCode default">reflection_range</code> that is used to
+constrain member functions. It is modeled by input ranges whose value
+and reference types are
+<code class="sourceCode default">meta::info</code> (references).</p>
+<p>It is unlikely that users want to refine this concept further in a
+way that requires subsumption, so it is not necessary to expose it as a
+concept. So at best exposing the concept is convenient for users writing
+generic code which also requires input ranges whose value and reference
+types are <code class="sourceCode default">meta::info</code>
+(references). However, this problem is better solved by adding a generic
+<code class="sourceCode default">ranges::input_range_of&lt;T&gt;</code>
+concept, as it is a problem that is not specific to reflection.</p>
+<p>Exposing the ad-hoc concept right now as-is would also freeze it
+in-place, so even if we had a
+<code class="sourceCode default">ranges::input_range_of&lt;T&gt;</code>
+concept, <code class="sourceCode default">reflection_range</code> would
+not subsume it. Leaving it exposition-only gives us more leeway.</p>
+<h2 data-number="7.2" id="user-impact-1"><span class="header-section-number">7.2</span> User impact<a href="#user-impact-1" class="self-link"></a></h2>
+<p>Users that want to constrain a function on a range of
+<code class="sourceCode default">std::meta::info</code> objects need to
+write a similar concept themselves.</p>
+<h2 data-number="7.3" id="implementation-impact-1"><span class="header-section-number">7.3</span> Implementation impact<a href="#implementation-impact-1" class="self-link"></a></h2>
+<p>None. An implementation presumably will still add the concept, just
+under a different name.</p>
+<h3 data-number="7.3.1" id="wording-1"><span class="header-section-number">7.3.1</span> Wording<a href="#wording-1" class="self-link"></a></h3>
+<p>Modify the new subsection in 21 [meta] after 21.3 [type.traits]:</p>
+<p><strong>Header <code class="sourceCode default">&lt;meta&gt;</code>
+synopsis</strong></p>
+<div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode diff"><code class="sourceCode diff"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>…</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  // [meta.reflection.substitute], reflection substitution</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  template &lt;class R&gt;</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="st">-    concept reflection_range = see below;</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="va">+    concept <em>reflection-range</em> = see below; // <em>exposition-only</em></span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="st">-  template &lt;<em>reflection-range</em> R = initializer_list&lt;info&gt;&gt;</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="va">+  template &lt;<em>reflection-range</em> R = initializer_list&lt;info&gt;&gt;</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    consteval bool can_substitute(info templ, R&amp;&amp; arguments);</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="st">-  template &lt;<em>reflection-range</em> R = initializer_list&lt;info&gt;&gt;</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="va">+  template &lt;<em>reflection-range</em> R = initializer_list&lt;info&gt;&gt;</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    consteval info substitute(info templ, R&amp;&amp; arguments);</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>…</span></code></pre></div>
+</div>
+<p>And likewise replace all others of
+<code class="sourceCode default">reflection_range</code> with
+<code class="sourceCode default"><em>reflection-range</em></code>.</p>
+<h2 data-number="7.4" id="poll-1.2-change-the-_reflection_range_-concept-to-match-language-semantics"><span class="header-section-number">7.4</span> Poll 1.2: Change the
+<code class="sourceCode default"><em>reflection_range</em></code>
+concept to match language semantics<a href="#poll-1.2-change-the-_reflection_range_-concept-to-match-language-semantics" class="self-link"></a></h2>
+<p>As specified,
+<code class="sourceCode default"><em>reflection_range</em></code> is a
+refinement of
+<code class="sourceCode default">ranges::input_range</code>, which
+imposes additional requirements on the iterator type, like the existence
+of a <code class="sourceCode default">value_type</code> and
+<code class="sourceCode default">difference_type</code> or
+<code class="sourceCode default">std::iterator_traits</code>
+specialization. Those requirements are not necessary for the range-based
+for-loop.</p>
+<p>People that don’t care about the standard library range concepts,
+still want to use reflection. They thus might have range types that
+don’t model any of the standard library range concepts, but are still
+supported by the range-based for-loop. For an interface that is supposed
+to be low-level and close to the compiler, it can make sense to instead
+follow the language semantics, and not the standard library
+semantics.</p>
+<h2 data-number="7.5" id="user-impact-2"><span class="header-section-number">7.5</span> User impact<a href="#user-impact-2" class="self-link"></a></h2>
+<p>Positive, functions accept strictly more types than before.</p>
+<table>
+<thead>
+<tr class="header">
+<th><div style="text-align:center">
+<strong>Before</strong>
+</div></th>
+<th><div style="text-align:center">
+<strong>After</strong>
+</div></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><div>
+
+<div class="sourceCode" id="cb3"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> MyRange</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span><span class="op">:</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">class</span> iterator</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">public</span><span class="op">:</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>        <span class="kw">using</span> value_type     <span class="op">=</span> std<span class="op">::</span>meta<span class="op">::</span>info;</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>        <span class="kw">using</span> difference_type <span class="op">=</span> std<span class="op">::</span><span class="dt">ptrdiff_t</span>;</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>        iterator<span class="op">()</span>;</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>        std<span class="op">::</span>meta<span class="op">::</span>info <span class="kw">operator</span><span class="op">*()</span> <span class="kw">const</span>;</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>        iterator<span class="op">&amp;</span> <span class="kw">operator</span><span class="op">++()</span>;</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>        <span class="dt">void</span> <span class="kw">operator</span><span class="op">++(</span><span class="dt">int</span><span class="op">)</span>;</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>        <span class="dt">bool</span> <span class="kw">operator</span><span class="op">==(</span>iterator, iterator<span class="op">)</span> <span class="kw">const</span>;</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span>;</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>    iterator begin<span class="op">()</span>;</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>    iterator end<span class="op">()</span>;</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a><span class="op">}</span>;</span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a><span class="kw">auto</span> result <span class="op">=</span> substitute<span class="op">(</span>info, MyRange<span class="op">{})</span>;</span></code></pre></div>
+
+</div></td>
+<td><div>
+
+<div class="sourceCode" id="cb4"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> MyRange</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span><span class="op">:</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">class</span> iterator</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">public</span><span class="op">:</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>        std<span class="op">::</span>meta<span class="op">::</span>info <span class="kw">operator</span><span class="op">*()</span> <span class="kw">const</span>;</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>        iterator<span class="op">&amp;</span> <span class="kw">operator</span><span class="op">++()</span>;</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>        <span class="dt">bool</span> <span class="kw">operator</span><span class="op">==(</span>iterator, iterator<span class="op">)</span> <span class="kw">const</span>;</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span>;</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>    iterator begin<span class="op">()</span>;</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>    iterator end<span class="op">()</span>;</span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a><span class="op">}</span>;</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a><span class="kw">auto</span> result <span class="op">=</span> substitute<span class="op">(</span>info, MyRange<span class="op">{})</span>;</span></code></pre></div>
+
+</div></td>
+</tr>
+</tbody>
+</table>
+<h2 data-number="7.6" id="implementation-impact-2"><span class="header-section-number">7.6</span> Implementation impact<a href="#implementation-impact-2" class="self-link"></a></h2>
+<p>Implementations need to write a custom concept instead of using
+<code class="sourceCode default">ranges::input_range</code>.</p>
+<h3 data-number="7.6.1" id="wording-2"><span class="header-section-number">7.6.1</span> Wording<a href="#wording-2" class="self-link"></a></h3>
+<p>Modify [meta.reflection.substitute] Reflection substitution</p>
+<div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode diff"><code class="sourceCode diff"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>template &lt;class R&gt;</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>concept <em>reflection_range</em> =</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="st">-  ranges::input_range&lt;R&gt; &amp;&amp;</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="st">-  same_as&lt;ranges::range_value_t&lt;R&gt;, info&gt; &amp;&amp;</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="st">-  same_as&lt;remove_cvref_t&lt;ranges::range_reference_t&lt;R&gt;&gt;, info&gt;;</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="va">+  <em>see-below</em>; // <em>exposition-only</em></span></span></code></pre></div>
+</div>
+<div class="add" style="color: #006e28">
+<p>A type <code class="sourceCode default">R</code> models the
+exposition-only concept
+<code class="sourceCode default"><em>reflection-range</em></code> if a
+range-based for loop statement [stmt.ranged] <code class="sourceCode default">for (std::same_as&lt;info&gt; auto _ : r) {}</code>
+is well-formed for an expression of type
+<code class="sourceCode default">R</code>.</p>
+<p>[<em>Note</em>: This requires checking whether the
+<code class="sourceCode default">begin-expr</code> and
+<code class="sourceCode default">end-expr</code> as defined in
+[stmt.ranged] are well-formed and that the resulting types support
+<code class="sourceCode default">!=</code>,
+<code class="sourceCode default">++</code>, and
+<code class="sourceCode default">*</code> as needed in the loop
+transformation. — <em>end note</em>]</p>
+</div>
+<h2 data-number="7.7" id="poll-1.3-replace-rangesinput_range"><span class="header-section-number">7.7</span> Poll 1.3: Replace
+<code class="sourceCode default">ranges::input_range</code><a href="#poll-1.3-replace-rangesinput_range" class="self-link"></a></h2>
+<p>Similarly, the
+<code class="sourceCode default">define_static_array</code> function is
+constrained by
+<code class="sourceCode default">ranges::input_range</code>. With the
+same logic as above, this should be generalized to require only the
+range-based for loop to work.</p>
+<h2 data-number="7.8" id="user-impact-3"><span class="header-section-number">7.8</span> User impact<a href="#user-impact-3" class="self-link"></a></h2>
+<p>Positive, functions accept strictly more types than before (see
+above).</p>
+<h2 data-number="7.9" id="implementation-impact-3"><span class="header-section-number">7.9</span> Implementation impact<a href="#implementation-impact-3" class="self-link"></a></h2>
+<p>Implementations need to write a custom concept instead of using
+<code class="sourceCode default">ranges::input_range</code>.</p>
+<h3 data-number="7.9.1" id="wording-3"><span class="header-section-number">7.9.1</span> Wording<a href="#wording-3" class="self-link"></a></h3>
+<p>Modify [meta.reflection.define_static] Static array generation</p>
+<div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode diff"><code class="sourceCode diff"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="st">-template&lt;ranges::input_range R&gt;</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="va">+template&lt;typename R&gt;</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="st">-    consteval span&lt;const ranges::range_value_t&lt;R&gt;&gt; define_static_array(R&amp;&amp; r);</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="va">+    consteval <em>see-below</em> define_static_array(R&amp;&amp; r);</span></span></code></pre></div>
+</div>
+<p>And change the wording as follows:</p>
+<div class="add" style="color: #006e28">
+<p><span class="marginalizedparent"><a class="marginalized">4</a></span>
+<em>Constraints:</em> A range-based for loop statement [stmt.ranged]
+<code class="sourceCode default">for (auto&amp;&amp; x : r) {}</code> is
+well-formed for an expression of type
+<code class="sourceCode default">R</code>.</p>
+<p>[<em>Note</em>: This requires checking whether the
+<code class="sourceCode default">begin-expr</code> and
+<code class="sourceCode default">end-expr</code> as defined in
+[stmt.ranged] are well-formed and that the resulting types support
+<code class="sourceCode default">!=</code>,
+<code class="sourceCode default">++</code>, and
+<code class="sourceCode default">*</code> as needed in the loop
+transformation. — <em>end note</em>]</p>
+<p><span class="marginalizedparent"><a class="marginalized">5</a></span>
+Given
+<code class="sourceCode default">for (auto&amp;&amp; x : r) {}</code>,
+let <code class="sourceCode default"><em>D</em></code> be the number of
+times the range-based for loop is iterated,
+<code class="sourceCode default"><em>T</em></code> be the type
+<code class="sourceCode default">decay_t&lt;decltype(x)&gt;</code>, and
+<code class="sourceCode default"><em>S</em></code> be a constexpr
+variable of array type with static storage duration, whose elements are
+of type <code class="sourceCode default">const <em>T</em></code>, for
+which there exists some <code class="sourceCode default">k ≥ 0</code>
+such that
+<code class="sourceCode default"><em>S</em>[k + i] <em>==</em> <em>ri</em></code>
+for all 0 ≤ i &lt; D where <code class="sourceCode default">ri</code> is
+the value of <code class="sourceCode default">x</code> on the
+<code class="sourceCode default">i</code>th iteration.</p>
+<p><span class="marginalizedparent"><a class="marginalized">6</a></span>
+Returns: <code class="sourceCode default">span&lt;const <em>T</em>&gt;(addressof(<em>S</em>[k]), <em>D</em>)</code></p>
+<p><span class="marginalizedparent"><a class="marginalized">7</a></span>
+Implementations are encouraged to return the same object whenever the
+same the function is called with the same argument.</p>
+</div>
+<p>And update the synopsis accordingly.</p>
+<h1 data-number="8" id="poll-2-replace-stdvector-by-new-stdmetainfo_array"><span class="header-section-number">8</span> Poll 2: Replace
+<code class="sourceCode default">std::vector</code> by new
+<code class="sourceCode default">std::meta::info_array</code><a href="#poll-2-replace-stdvector-by-new-stdmetainfo_array" class="self-link"></a></h1>
+<p>Functions that return a range of
+<code class="sourceCode default">meta::info</code> objects do it by
+returning a <code class="sourceCode default">std::vector&lt;std::meta::info&gt;</code>
+(for implementation reasons, it has to be an owning container and cannot
+be something like a <code class="sourceCode default">std::span</code>).
+For the reasons discussed above, this is not ideal.</p>
+<p>Instead, all functions that return a <code class="sourceCode default">std::vector&lt;std::meta::info&gt;</code>
+should instead return a new type
+<code class="sourceCode default">std::meta::info_array</code>. This is a
+type that can only be constructed by the implementation and has whatever
+internal layout is most appropriate for the implementation. Unlike
+<code class="sourceCode default">std::vector</code>, the proposed
+<code class="sourceCode default">std::meta::info_array</code> is not
+mutable and cannot grow in size. This simplifies the implementation
+further.</p>
+<p>For the vast majority of calls, this change is not noticeable: All
+they do is iterate over the result, compose it with other views, or
+apply range algorithms. For those users that do rely on having a
+mutable, growable container, all they need to do is call <code class="sourceCode default">std::ranges::to&lt;std::vector&gt;</code>.</p>
+<p>The proposed wording adds all members of
+<code class="sourceCode default">std::array</code>, except for
+<code class="sourceCode default">fill</code> (which doesn’t make sense)
+and <code class="sourceCode default">reverse_iterator</code> (would
+introduce more standard library dependencies). That way it also provides
+all functions provided by
+<code class="sourceCode default">std::ranges::view_interface</code> for
+a contiguous range (except for
+<code class="sourceCode default">operator bool</code>, which is weird
+for a container). Alternatively, the minimum interface could model
+<code class="sourceCode default">std::initializer_list</code> and only
+provide
+<code class="sourceCode default">begin</code>/<code class="sourceCode default">end</code>
+and <code class="sourceCode default">size</code>.</p>
+<h2 data-number="8.1" id="user-impact-4"><span class="header-section-number">8.1</span> User impact<a href="#user-impact-4" class="self-link"></a></h2>
+<p>Users that want to append elements to a range of input objects or
+remove them from a range of input objects need to either use
+<code class="sourceCode default">views::concat</code>/<code class="sourceCode default">views::filter</code>
+or <code class="sourceCode default">std::ranges::to</code>.</p>
+<p>In our testing, this affected the command-line argument parsing
+example of Daveed’s keynote:</p>
+<table>
+<thead>
+<tr class="header">
+<th><div style="text-align:center">
+<strong>Before</strong>
+</div></th>
+<th><div style="text-align:center">
+<strong>After (option 1)</strong>
+</div></th>
+<th><div style="text-align:center">
+<strong>After (option 2)</strong>
+</div></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><div>
+
+<div class="sourceCode" id="cb7"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">static</span> <span class="kw">consteval</span> <span class="kw">auto</span> clap_annotations_of<span class="op">(</span>info dm<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">auto</span> notes <span class="op">=</span> annotations_of<span class="op">(</span>dm<span class="op">)</span>;</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    std<span class="op">::</span>erase_if<span class="op">(</span>notes, <span class="op">[](</span>info  ann<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> parent_of<span class="op">(</span>type_of<span class="op">(</span>ann<span class="op">))</span> <span class="op">!=</span> <span class="op">^^</span>clap;</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    <span class="op">})</span>;</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> notes;</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+
+</div></td>
+<td><div>
+
+<div class="sourceCode" id="cb8"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">static</span> <span class="kw">consteval</span> <span class="kw">auto</span> clap_annotations_of<span class="op">(</span>info dm<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">auto</span> notes <span class="op">=</span> annotations_of<span class="op">(</span>dm<span class="op">)</span> <span class="op">|</span> std<span class="op">::</span>ranges<span class="op">::</span>to<span class="op">&lt;</span>std<span class="op">::</span>vector<span class="op">&gt;()</span>;</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    std<span class="op">::</span>erase_if<span class="op">(</span>notes, <span class="op">[](</span>info  ann<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> parent_of<span class="op">(</span>type_of<span class="op">(</span>ann<span class="op">))</span> <span class="op">!=</span> <span class="op">^^</span>clap;</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    <span class="op">})</span>;</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> notes;</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+
+</div></td>
+<td><div>
+
+<div class="sourceCode" id="cb9"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">static</span> <span class="kw">consteval</span> <span class="kw">auto</span> clap_annotations_of<span class="op">(</span>info dm<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> annotations_of<span class="op">(</span>dm<span class="op">)</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>        <span class="op">|</span> std<span class="op">::</span>views<span class="op">::</span>filter<span class="op">([](</span>info  ann<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> parent_of<span class="op">(</span>type_of<span class="op">(</span>ann<span class="op">))</span> <span class="op">==</span> <span class="op">^^</span>clap;</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>        <span class="op">})</span>;</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+
+</div></td>
+</tr>
+</tbody>
+</table>
+<p>A similar change would be needed for
+<code class="sourceCode default">daw_json_link</code>. However, <a href="https://github.com/beached/daw_json_link/blob/85f5f3f3d15a27fa000733f758b157d2267a74c8/include/daw/json/daw_json_reflection.h#L24-L32">their
+use case</a> is served by <code class="sourceCode default">std::meta::get_public_nonstatic_data_members()</code>.</p>
+<p>For completeness, we also needed to update the implementation of
+e.g. <code class="sourceCode default">std::meta::subobjects_of</code>
+which called <code class="sourceCode default">.append_range()</code>
+internally:</p>
+<table>
+<thead>
+<tr class="header">
+<th><div style="text-align:center">
+<strong>Before</strong>
+</div></th>
+<th><div style="text-align:center">
+<strong>After</strong>
+</div></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><div>
+
+<div class="sourceCode" id="cb10"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">consteval</span> <span class="kw">auto</span> subobjects_of<span class="op">(</span>info r<span class="op">)</span> <span class="op">-&gt;</span> vector<span class="op">&lt;</span>info<span class="op">&gt;</span> <span class="op">{</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>is_namespace<span class="op">(</span>r<span class="op">))</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>        <span class="cf">throw</span> <span class="st">&quot;Namespaces cannot have subobjects&quot;</span>;</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">auto</span> subobjects <span class="op">=</span> bases_of<span class="op">(</span>r<span class="op">)</span>;</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    subobjects<span class="op">.</span>append_range<span class="op">(</span>nonstatic_data_members_of<span class="op">(</span>r<span class="op">))</span>;</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> subobjects;</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+
+</div></td>
+<td><div>
+
+<div class="sourceCode" id="cb11"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="kw">consteval</span> <span class="kw">auto</span> subobjects_of<span class="op">(</span>info r<span class="op">)</span> <span class="op">-&gt;</span> info_array <span class="op">{</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>is_namespace<span class="op">(</span>r<span class="op">))</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>        <span class="cf">throw</span> <span class="st">&quot;Namespaces cannot have subobjects&quot;</span>;</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">auto</span> subobjects <span class="op">=</span> bases_of<span class="op">(</span>r<span class="op">)</span> <span class="op">|</span> ranges<span class="op">::</span>to<span class="op">&lt;</span>vector<span class="op">&gt;()</span>;</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>    subobjects<span class="op">.</span>append_range<span class="op">(</span>nonstatic_data_members_of<span class="op">(</span>r<span class="op">))</span>;</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> subobjects;</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+
+</div></td>
+</tr>
+</tbody>
+</table>
+<p>An implementation that does not use
+<code class="sourceCode default">std::vector</code> internally would not
+need to change anything.</p>
+<p>Users that do not wish to modify the container and only iterate over
+it are not affected.</p>
+<h2 data-number="8.2" id="implementation-impact-4"><span class="header-section-number">8.2</span> Implementation impact<a href="#implementation-impact-4" class="self-link"></a></h2>
+<p>An implementation that does not care about decoupling dependencies
+just need to provide a wrapper class over
+<code class="sourceCode default">std::vector</code>. In our prototype
+implementation, it was done in <a href="https://gist.github.com/foonathan/457bd0073cfde568e446eb4d42ec87fe#file-meta-L431-L462">30
+lines of code</a>. A production-ready implementation can then also
+optimize <code class="sourceCode default">std::ranges::to</code> to
+avoid additional memory allocations and copies when the user wants a
+<code class="sourceCode default">std::vector</code>.</p>
+<h2 data-number="8.3" id="wording-4"><span class="header-section-number">8.3</span> Wording<a href="#wording-4" class="self-link"></a></h2>
+<p>Modify the new subsection in 21 [meta] after 21.3 [type.traits]:</p>
+<p><strong>Header <code class="sourceCode default">&lt;meta&gt;</code>
+synopsis</strong></p>
+<div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode diff"><code class="sourceCode diff"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>…</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>namespace std::meta {</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    using info = decltype(^::);</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="va">+    // [meta.reflection.info_array], info array</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="va">+    class info_array;</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>    …</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a><span class="st">-    consteval vector&lt;info&gt; template_arguments_of(info r);</span></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a><span class="va">+    consteval info_array template_arguments_of(info r);</span></span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>    // [meta.reflection.member.queries], reflection member queries</span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a><span class="st">-    consteval vector&lt;info&gt; members_of(info r);</span></span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a><span class="va">+    consteval info_array members_of(info r);</span></span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a><span class="st">-    consteval vector&lt;info&gt; bases_of(info type);</span></span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a><span class="va">+    consteval info_array bases_of(info type);</span></span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a><span class="st">-    consteval vector&lt;info&gt; static_data_members_of(info type);</span></span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a><span class="va">+    consteval info_array static_data_members_of(info type);</span></span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a><span class="st">-    consteval vector&lt;info&gt; nonstatic_data_members_of(info type);</span></span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a><span class="va">+    consteval info_array nonstatic_data_members_of(info type);</span></span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a><span class="st">-    consteval vector&lt;info&gt; enumerators_of(info type_enum);</span></span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a><span class="va">+    consteval info_array enumerators_of(info type_enum);</span></span>
+<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a><span class="st">-    consteval vector&lt;info&gt; get_public_members(info type);</span></span>
+<span id="cb12-26"><a href="#cb12-26" aria-hidden="true" tabindex="-1"></a><span class="va">+    consteval info_array get_public_members(info type);</span></span>
+<span id="cb12-27"><a href="#cb12-27" aria-hidden="true" tabindex="-1"></a><span class="st">-    consteval vector&lt;info&gt; get_public_static_data_members(info type);</span></span>
+<span id="cb12-28"><a href="#cb12-28" aria-hidden="true" tabindex="-1"></a><span class="va">+    consteval info_array get_public_static_data_members(info type);</span></span>
+<span id="cb12-29"><a href="#cb12-29" aria-hidden="true" tabindex="-1"></a><span class="st">-    consteval vector&lt;info&gt; get_public_nonstatic_data_members(info type);</span></span>
+<span id="cb12-30"><a href="#cb12-30" aria-hidden="true" tabindex="-1"></a><span class="va">+    consteval info_array get_public_nonstatic_data_members(info type);</span></span>
+<span id="cb12-31"><a href="#cb12-31" aria-hidden="true" tabindex="-1"></a><span class="st">-    consteval vector&lt;info&gt; get_public_bases(info type);</span></span>
+<span id="cb12-32"><a href="#cb12-32" aria-hidden="true" tabindex="-1"></a><span class="va">+    consteval info_array get_public_bases(info type);</span></span>
+<span id="cb12-33"><a href="#cb12-33" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+<p>Add a new section <strong>[meta.reflection.info_array] Info
+array</strong>:</p>
+<div class="add" style="color: #006e28">
+
+<div class="sourceCode" id="cb13"><pre class="sourceCode default cpp"><code class="sourceCode default"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>class info_array {</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>public:</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    using value_type             = info;</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>    using pointer                = const info*;</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    using const_pointer          = pointer;</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>    using reference              = const info&amp;;</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>    using const_reference        = reference;</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>    using size_type              = size_t;</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>    using difference_type        = ptrdiff_t;</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>    using iterator = pointer;</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>    info_array() = delete;</span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>    ~info_array();</span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>    constexpr info_array(const info_array&amp;);</span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>    constexpr info_array(info_array&amp;&amp;) noexcept;</span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>    constexpr info_array&amp; operator=(const info_array&amp;);</span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>    constexpr info_array&amp; operator=(info_array&amp;&amp;) noexcept;</span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a>    constexpr void swap(info_array&amp;) noexcept;</span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a>    constexpr iterator begin() const noexcept;</span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a>    constexpr iterator end() const noexcept;</span>
+<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a>    constexpr iterator cbegin() const noexcept { return begin(); }</span>
+<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a>    constexpr iterator cend() const noexcept { return end(); }</span>
+<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-27"><a href="#cb13-27" aria-hidden="true" tabindex="-1"></a>    constexpr bool empty() const noexcept { return begin() == end(); }</span>
+<span id="cb13-28"><a href="#cb13-28" aria-hidden="true" tabindex="-1"></a>    constexpr size_type size() const noexcept { return end() - begin(); }</span>
+<span id="cb13-29"><a href="#cb13-29" aria-hidden="true" tabindex="-1"></a>    constexpr reference operator[](size_type i) const noexcept { return begin()[i]; }</span>
+<span id="cb13-30"><a href="#cb13-30" aria-hidden="true" tabindex="-1"></a>    constexpr reference front() const noexcept { return begin()[0]; }</span>
+<span id="cb13-31"><a href="#cb13-31" aria-hidden="true" tabindex="-1"></a>    constexpr reference back() const noexcept { return end()[-1]; }</span>
+<span id="cb13-32"><a href="#cb13-32" aria-hidden="true" tabindex="-1"></a>    constexpr pointer data() const noexcept { return begin(); }</span>
+<span id="cb13-33"><a href="#cb13-33" aria-hidden="true" tabindex="-1"></a>};</span></code></pre></div>
+<p><span class="marginalizedparent"><a class="marginalized">1</a></span>
+The type <code class="sourceCode default">info_array</code> is a
+non-mutable, non-resizable container of
+<code class="sourceCode default">info</code> objects.</p>
+<p>etc. etc.</p>
+</div>
+<p>Update the other sections accordingly to use
+<code class="sourceCode default">info_array</code> instead of
+<code class="sourceCode default">vector&lt;info&gt;</code>.</p>
+<h1 data-number="9" id="poll-3-replace-stdspan-by-stdinitializer_list"><span class="header-section-number">9</span> Poll 3: Replace
+<code class="sourceCode default">std::span</code> by
+<code class="sourceCode default">std::initializer_list</code><a href="#poll-3-replace-stdspan-by-stdinitializer_list" class="self-link"></a></h1>
+<p><code class="sourceCode default">define_static_array</code> returns a
+<code class="sourceCode default">std::span</code> to the static array
+that is being defined. To reduce dependencies, this could be
+<code class="sourceCode default">std::initializer_list</code>. This has
+the additional benefit that you can pass it to
+<code class="sourceCode default">std::initializer_list</code>
+constructors.</p>
+<p>It is not clear to us how
+<code class="sourceCode default">define_static_array</code> would be
+used in the first place, since you cannot actually initialize an array
+with it. We could imagine changing the language to allow initilization
+of an array from a <code class="sourceCode default">consteval</code>
+<code class="sourceCode default">std::initializer_list</code> object,
+but allowing initialization from a
+<code class="sourceCode default">std::span</code> (and presumably
+arbitrary ranges) seems more involved.</p>
+<h2 data-number="9.1" id="user-impact-5"><span class="header-section-number">9.1</span> User impact<a href="#user-impact-5" class="self-link"></a></h2>
+<p>Users that want to e.g. index into the result of
+<code class="sourceCode default">define_static_array</code> need to use
+<code class="sourceCode default">.begin()[i]</code> instead or write
+<code class="sourceCode default">std::span(define_static_array(…))</code>.
+Users can now use
+<code class="sourceCode default">define_static_array</code> to more
+easily initialize containers. User that merely iterate over the result
+are not affected.</p>
+<h2 data-number="9.2" id="implementation-impact-5"><span class="header-section-number">9.2</span> Implementation impact<a href="#implementation-impact-5" class="self-link"></a></h2>
+<p>The implementation needs to add a way to construct a
+<code class="sourceCode default">std::initializer_list</code> from a
+pointer plus size, or change the compiler API to return
+<code class="sourceCode default">std::initializer_list</code>
+directly.</p>
+<h2 data-number="9.3" id="wording-5"><span class="header-section-number">9.3</span> Wording<a href="#wording-5" class="self-link"></a></h2>
+<p>Modify [meta.reflection.define_static] Static array generation and
+update the synopsis accordingly</p>
+<div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode diff"><code class="sourceCode diff"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="st">-template&lt;ranges::input_range R&gt;</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="va">+template&lt;typename R&gt;</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="st">-    consteval span&lt;const ranges::range_value_t&lt;R&gt;&gt; define_static_array(R&amp;&amp; r);</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="va">+    consteval initializer_list&lt;ranges::range_value_t&lt;R&gt;&gt; define_static_array(R&amp;&amp; r);</span></span></code></pre></div>
+</div>
+<p><span class="marginalizedparent"><a class="marginalized">4</a></span>
+<em>Constraints</em>: <code class="sourceCode default">is_constructible_v&lt;ranges::range_value_t&lt;R&gt;, ranges::range_reference_t&lt;R&gt;&gt;</code>
+is <code class="sourceCode default">true</code>.</p>
+<p><span class="marginalizedparent"><a class="marginalized">5</a></span>
+Let <code class="sourceCode default"><em>D</em></code> be
+<code class="sourceCode default">ranges::distance(r)</code> and
+<code class="sourceCode default"><em>S</em></code> be a constexpr
+variable of array type with static storage duration, whose elements are
+of type <code class="sourceCode default">const ranges::range_value_t&lt;R&gt;</code>,
+for which there exists some
+<code class="sourceCode default">k ≥ 0</code> such that
+<code class="sourceCode default"><em>S</em>[k + i] == r[i]</code> for
+all <code class="sourceCode default">0 ≤ i &lt; <em>D</em></code>.</p>
+<p><span class="marginalizedparent"><a class="marginalized">6</a></span>
+<em>Returns</em>: <span class="rm" style="color: #bf0303"><del><span><code class="sourceCode default">span(addressof(S[k]), D)</code></span></del></span><span class="add" style="color: #006e28"><ins>An
+<span><code class="sourceCode default">initializer_list</code></span>
+object <span><code class="sourceCode default">il</code></span> where
+<span><code class="sourceCode default">il.begin() == <em>S</em> + k</code></span>
+and
+<span><code class="sourceCode default">il.end() == <em>S</em> + k + D</code></span></ins></span>.</p>
+<p><span class="marginalizedparent"><a class="marginalized">7</a></span>
+Implementations are encouraged to return the same object whenever the
+same the function is called with the same argument.</p>
+<h1 data-number="10" id="replace-stdu8string_view"><span class="header-section-number">10</span> Replace
+<code class="sourceCode default">std::[u8]string_view</code><a href="#replace-stdu8string_view" class="self-link"></a></h1>
+<h2 data-number="10.1" id="poll-4.1-replace-stdu8string_view-in-argument-positions-by-a-generic-argument"><span class="header-section-number">10.1</span> Poll 4.1 Replace
+<code class="sourceCode default">std::[u8]string_view</code> in argument
+positions by a generic argument<a href="#poll-4.1-replace-stdu8string_view-in-argument-positions-by-a-generic-argument" class="self-link"></a></h2>
+<p><code class="sourceCode default">define_static_string</code> takes a
+<code class="sourceCode default">std::[u8]string_view</code>. The
+dependency can be avoided and the function be made more general if it
+instead accepts any range of characters.</p>
+<h3 data-number="10.1.1" id="user-impact-6"><span class="header-section-number">10.1.1</span> User impact<a href="#user-impact-6" class="self-link"></a></h3>
+<p>Positive, functions accept strictly more types than before.</p>
+<h3 data-number="10.1.2" id="implementation-impact-6"><span class="header-section-number">10.1.2</span> Implementation impact<a href="#implementation-impact-6" class="self-link"></a></h3>
+<p>Minimal. An implementation that does not care about minimizing
+dependencies can just construct a
+<code class="sourceCode default">std::string</code> with
+<code class="sourceCode default">std::ranges::to</code> and pass a
+<code class="sourceCode default">std::string_view</code> of that to the
+already existing compiler API.</p>
+<h3 data-number="10.1.3" id="wording-if-poll-1.3-has-no-consensus"><span class="header-section-number">10.1.3</span> Wording (if poll 1.3 has no
+consensus)<a href="#wording-if-poll-1.3-has-no-consensus" class="self-link"></a></h3>
+<p>Update [meta.reflection.define_static] Static array generation as
+follows.</p>
+<div>
+<div class="sourceCode" id="cb15"><pre class="sourceCode diff"><code class="sourceCode diff"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="st">-consteval const char* define_static_string(string_view str);</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="va">+template&lt;ranges::input_range R&gt; requires same_as&lt;ranges::range_value_t&lt;R&gt;, char&gt; &amp;&amp; same_as&lt;remove_cvref_t&lt;ranges::range_reference_t&lt;R&gt;&gt;, char&gt;</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="va">+consteval const char* define_static_string(R&amp;&amp; r);</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="st">-consteval const char8_t* define_static_string(u8string_view str);</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="va">+template&lt;ranges::input_range R&gt; requires same_as&lt;ranges::range_value_t&lt;R&gt;, char8_t&gt; &amp;&amp; same_as&lt;remove_cvref_t&lt;ranges::range_reference_t&lt;R&gt;&gt;, char8_t&gt;</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a><span class="va">+consteval const char8_t* define_static_string(R&amp;&amp; r);</span></span></code></pre></div>
+</div>
+<p><span class="marginalizedparent"><a class="marginalized">1</a></span>
+<span class="add" style="color: #006e28"><ins>Let
+<span><code class="sourceCode default"><em>str</em></code></span> be
+<span><code class="sourceCode default">ranges::to&lt;string&gt;(forward&lt;R&gt;(r))</code></span>.</ins></span>
+Let <code class="sourceCode default"><em>S</em></code> be a constexpr
+variable of array type with static storage duration, whose elements are
+of type <code class="sourceCode default">const char</code> or
+<code class="sourceCode default">const char8_t</code> respectively, for
+which there exists some <code class="sourceCode default">k ≥ 0</code>
+such that:</p>
+<ul>
+<li><span class="marginalizedparent"><a class="marginalized">(1.1)</a></span>
+<code class="sourceCode default">S[k + i] == str[i]</code> for all
+<code class="sourceCode default">0 ≤ i &lt; str.size()</code>, and</li>
+<li><span class="marginalizedparent"><a class="marginalized">(1.2)</a></span>
+<code class="sourceCode default">S[k + str.size()]</code> == ‘\0’.</li>
+</ul>
+<p><span class="marginalizedparent"><a class="marginalized">2</a></span>
+<em>Returns</em>:
+<code class="sourceCode default">&amp;<em>S</em>[k]</code></p>
+<p><span class="marginalizedparent"><a class="marginalized">3</a></span>
+Implementations are encouraged to return the same object whenever the
+same variant of these functions is called with the same argument.</p>
+<p>And update the synopsis accordingly.</p>
+<h3 data-number="10.1.4" id="wording-if-poll-1.3-has-consensus"><span class="header-section-number">10.1.4</span> Wording (if poll 1.3 has
+consensus)<a href="#wording-if-poll-1.3-has-consensus" class="self-link"></a></h3>
+<p>Update [meta.reflection.define_static] Static array generation as
+follows.</p>
+<div>
+<div class="sourceCode" id="cb16"><pre class="sourceCode diff"><code class="sourceCode diff"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="st">-consteval const char* define_static_string(string_view str);</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="st">-consteval const char8_t* define_static_string(string_view str);</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="va">+template&lt;typename R&gt;</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="va">+consteval const <em>see-below</em>* define_static_string(R&amp;&amp; str);</span></span></code></pre></div>
+</div>
+<div class="add" style="color: #006e28">
+<p><span class="marginalizedparent"><a class="marginalized">1</a></span>
+<em>Constraints:</em> A range-based for loop statement [stmt.ranged]
+<code class="sourceCode default">for (std::same_as&lt;char&gt; auto x : r) {}</code>
+or <code class="sourceCode default">for (std::same_as&lt;char8_t&gt; auto x : r) {}</code>
+is well-formed for an expression of type
+<code class="sourceCode default">R</code>.</p>
+<p>[<em>Note</em>: This requires checking whether the
+<code class="sourceCode default">begin-expr</code> and
+<code class="sourceCode default">end-expr</code> as defined in
+[stmt.ranged] are well-formed and that the resulting types support
+<code class="sourceCode default">!=</code>,
+<code class="sourceCode default">++</code>, and
+<code class="sourceCode default">*</code> as needed in the loop
+transformation. — <em>end note</em>]</p>
+<p><span class="marginalizedparent"><a class="marginalized">2</a></span>
+Given
+<code class="sourceCode default">for (auto&amp;&amp; x : r) {}</code>,
+let <code class="sourceCode default"><em>D</em></code> be the number of
+times the range-based for loop is iterated,
+<code class="sourceCode default"><em>T</em></code> be the type
+<code class="sourceCode default">decay_t&lt;decltype(x)&gt;</code>, and
+<code class="sourceCode default"><em>S</em></code> be a constexpr
+variable of array type with static storage duration, whose elements are
+of type <code class="sourceCode default">const <em>T</em></code>, for
+which there exists some <code class="sourceCode default">k ≥ 0</code>
+such that
+<code class="sourceCode default"><em>S</em>[k + i] <em>==</em> <em>ri</em></code>
+for all 0 ≤ i &lt; D, where <code class="sourceCode default">ri</code>
+is the value of <code class="sourceCode default">x</code> on the
+<code class="sourceCode default">i</code>th iteration, and
+<code class="sourceCode default">@_S_[k + D] == &#39;\0&#39;</code>.</p>
+<p><span class="marginalizedparent"><a class="marginalized">3</a></span>
+Returns: <code class="sourceCode default"><em>S</em>[k]</code>.</p>
+<p><span class="marginalizedparent"><a class="marginalized">4</a></span>
+Implementations are encouraged to return the same object whenever the
+same the function is called with the same argument.</p>
+</div>
+<p>And update the synopsis accordingly.</p>
+<h2 data-number="10.2" id="poll-4.2-replace-stdu8string_view-as-return-type-with-const-char8_t"><span class="header-section-number">10.2</span> Poll 4.2: Replace
+<code class="sourceCode default">std::[u8]string_view</code> as return
+type with <code class="sourceCode default">const char[8_t]*</code><a href="#poll-4.2-replace-stdu8string_view-as-return-type-with-const-char8_t" class="self-link"></a></h2>
+<p><code class="sourceCode default">[u8]identifier_of</code> and
+<code class="sourceCode default">[u8]display_string_of</code> return a
+<code class="sourceCode default">std::[u8]string_view</code>. In
+addition, to the dependency problems, it is not guaranteed to be a
+null-terminated string, and even if it were, getting a null-terminated
+string out of a <code class="sourceCode default">std::string_view</code>
+requires an awkward <code class="sourceCode default">.data()</code> call
+and a comment explaining why it is null-terminated. Both problems are
+solved by returning a
+<code class="sourceCode default">const char[8_t]*</code> instead, just
+like
+<code class="sourceCode default">std::source_location::file()</code>
+does, which is a very similar function.</p>
+<p>The downside is that users who want one of the gazillion member
+functions have to manually create a
+<code class="sourceCode default">std::string_view</code> first. However,
+most calls probably forward the resulting identifier unchanged and are
+unaffected.</p>
+<h3 data-number="10.2.1" id="user-impact-7"><span class="header-section-number">10.2.1</span> User impact<a href="#user-impact-7" class="self-link"></a></h3>
+<p>Users that require a
+<code class="sourceCode default">std::[u8]string_view</code> as opposed
+to a <code class="sourceCode default">const char[8_t]*</code> need to
+construct it manually. In our testing we have not found any.</p>
+<table>
+<thead>
+<tr class="header">
+<th><div style="text-align:center">
+<strong>Before</strong>
+</div></th>
+<th><div style="text-align:center">
+<strong>After</strong>
+</div></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><div>
+
+<div class="sourceCode" id="cb17"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="kw">auto</span> name <span class="op">=</span> identifier_of<span class="op">(</span>info<span class="op">)</span>;</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>… name<span class="op">.</span>find<span class="op">(</span>…<span class="op">)</span> …</span></code></pre></div>
+
+</div></td>
+<td><div>
+
+<div class="sourceCode" id="cb18"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>std<span class="op">::</span>string_view name <span class="op">=</span> identifier_of<span class="op">(</span>info<span class="op">)</span>;</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>… name<span class="op">.</span>find<span class="op">(</span>…<span class="op">)</span> …</span></code></pre></div>
+
+</div></td>
+</tr>
+</tbody>
+</table>
+<p>Users that require a null-terminated string get one directly.</p>
+<h3 data-number="10.2.2" id="implementation-impact-7"><span class="header-section-number">10.2.2</span> Implementation impact<a href="#implementation-impact-7" class="self-link"></a></h3>
+<p>None, the compiler API on clang for example already returns a
+<code class="sourceCode default">const char[8_t]*</code>.</p>
+<h3 data-number="10.2.3" id="wording-6"><span class="header-section-number">10.2.3</span> Wording<a href="#wording-6" class="self-link"></a></h3>
+<p>Modify the new subsection in 21 [meta] after 21.3 [type.traits]:</p>
+<p><strong>Header <code class="sourceCode default">&lt;meta&gt;</code>
+synopsis</strong></p>
+<div>
+<div class="sourceCode" id="cb19"><pre class="sourceCode diff"><code class="sourceCode diff"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>…</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>    // [meta.reflection.names], reflection names and locations</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>    consteval bool has_identifier(info r);</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a><span class="st">-    consteval string_view identifier_of(info r);</span></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a><span class="va">+    consteval const char* identifier_of(info r);</span></span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a><span class="st">-    consteval u8string_view u8identifier_of(info r);</span></span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a><span class="va">+    consteval const char8_t* u8identifier_of(info r);</span></span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a><span class="st">-    consteval string_view display_string_of(info r);</span></span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a><span class="va">+    consteval const char* display_string_of(info r);</span></span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a><span class="st">-    consteval u8string_view u8display_string_of(info r);</span></span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a><span class="va">+    consteval const char8_t* u8display_string_of(info r);</span></span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a>    consteval source_location source_location_of(info r);</span>
+<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a>…</span></code></pre></div>
+</div>
+<p>And update [meta.reflection.names] accordingly.</p>
+<h1 data-number="11" id="poll-5-re-design-data_member_spec"><span class="header-section-number">11</span> Poll 5: Re-design
+<code class="sourceCode default">data_member_spec</code><a href="#poll-5-re-design-data_member_spec" class="self-link"></a></h1>
+<p><code class="sourceCode default">data_member_spec</code> defines a
+new data member. It only takes one mandatory attribute, the type, and
+optional options in an object of type
+<code class="sourceCode default">data_member_options_t</code>. This
+aggregate type has multiple standard library dependencies:</p>
+<ol type="1">
+<li>The members <code class="sourceCode default">name</code>,
+<code class="sourceCode default">alignment</code> and
+<code class="sourceCode default">width</code> are
+<code class="sourceCode default">std::optional</code>.</li>
+<li>The nested type <code class="sourceCode default">name_type</code> is
+specified to be constructible from anything a
+<code class="sourceCode default">std::string</code> or
+<code class="sourceCode default">std::u8string</code> can be constructed
+from. This requires at least knowledge of the constructors, although an
+implementation could do heroics to depend pulling in the header.</li>
+</ol>
+<p>Ignoring the dependencies, the proposed design has multiple other
+problems that could be fixed:</p>
+<ul>
+<li>The <code class="sourceCode default">name</code> member, if present,
+stores a copy of a user-provided string, which is then further copied
+into the compiler internal storage that represents a data member
+specification when calling
+<code class="sourceCode default">data_member_spec</code>.</li>
+<li>It is an error to specify both
+<code class="sourceCode default">alignment</code> and
+<code class="sourceCode default">width</code> yet the API does nothing
+to prevent that.</li>
+<li>Adding additional options is a potential ABI break if there are
+runtime functions that take or return a
+<code class="sourceCode default">data_member_options_t</code> (which is
+weird, but possible).</li>
+</ul>
+<p>A design that instead provides multiple creation functions combined
+with setters has none of those problems.</p>
+<h2 data-number="11.1" id="proposed-design"><span class="header-section-number">11.1</span> Proposed Design<a href="#proposed-design" class="self-link"></a></h2>
+<div class="sourceCode" id="cb20"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> data_member_spec_t <span class="op">{</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span><span class="op">:</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">consteval</span> data_member_spec_t<span class="op">&amp;</span> name<span class="op">(</span><span class="co">/* depends on polls 4.1 and 1.3 */</span> name<span class="op">)</span>; <span class="co">// set the name</span></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">consteval</span> data_member_spec_t<span class="op">&amp;</span> no_unique_address<span class="op">(</span><span class="dt">bool</span> enable <span class="op">=</span> <span class="kw">true</span><span class="op">)</span>; <span class="co">// set no_unique_address</span></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">consteval</span> <span class="kw">operator</span> info<span class="op">()</span> <span class="kw">const</span>; <span class="co">// build the data member specification</span></span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a><span class="op">}</span>;</span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a><span class="kw">consteval</span> data_member_spec_t data_member_spec<span class="op">(</span>info type<span class="op">)</span>; <span class="co">// unnamed, unaligned member with no attributes</span></span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a><span class="kw">consteval</span> data_member_spec_t data_member_spec_aligned<span class="op">(</span>info type, <span class="dt">int</span> alignment; <span class="co">// unnamed, aligned member with no attributes</span></span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a><span class="kw">consteval</span> data_member_spec_t data_member_spec_bitfield<span class="op">(</span>info type, <span class="dt">int</span> width<span class="op">)</span>; <span class="co">// unnamed bitfield with no attributes</span></span></code></pre></div>
+<p>We provide named functions to create the three different cases of
+data members. They return a builder object that can be further modified
+with setters and implicitly converted to an
+<code class="sourceCode default">info</code> object.</p>
+<p>An implementation of
+<code class="sourceCode default">data_member_spec_t</code> that guards
+against ABI breaks can just store a single
+<code class="sourceCode default">info</code> object that represents the
+data already given, and modifies the compiler internal representation
+when calling <code class="sourceCode default">.name()</code> and
+<code class="sourceCode default">.no_unique_address()</code>.</p>
+<p>This requires also changes to
+<code class="sourceCode default">define_class</code> to accept a range
+of types convertible to
+<code class="sourceCode default">info</code>.</p>
+<h2 data-number="11.2" id="user-impact-8"><span class="header-section-number">11.2</span> User impact<a href="#user-impact-8" class="self-link"></a></h2>
+<p>The API changes dramatically.</p>
+<table>
+<thead>
+<tr class="header">
+<th><div style="text-align:center">
+<strong>Before</strong>
+</div></th>
+<th><div style="text-align:center">
+<strong>After</strong>
+</div></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><div>
+
+<div class="sourceCode" id="cb21"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>define_class<span class="op">(^</span>storage, <span class="op">{</span>data_member_spec<span class="op">(^</span>T, <span class="op">{.</span>name <span class="op">=</span> <span class="st">&quot;foo&quot;</span>, <span class="op">.</span>no_unique_address <span class="op">=</span> <span class="kw">true</span><span class="op">})})</span></span></code></pre></div>
+
+</div></td>
+<td><div>
+
+<div class="sourceCode" id="cb22"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>define_class<span class="op">(^</span>storage, <span class="op">{</span>data_member_spec<span class="op">(^</span>T<span class="op">).</span>name<span class="op">(</span><span class="st">&quot;foo&quot;</span><span class="op">).</span>no_unique_address<span class="op">()})</span></span></code></pre></div>
+
+</div></td>
+</tr>
+</tbody>
+</table>
+<h2 data-number="11.3" id="implementation-impact-8"><span class="header-section-number">11.3</span> Implementation impact<a href="#implementation-impact-8" class="self-link"></a></h2>
+<p>An implementation that does not care about minimizing dependencies
+can implement <code class="sourceCode default">data_member_spec_t</code>
+in terms of the current
+<code class="sourceCode default">data_member_options_t</code>.</p>
+<h2 data-number="11.4" id="wording-7"><span class="header-section-number">11.4</span> Wording<a href="#wording-7" class="self-link"></a></h2>
+<p>TBD</p>
+<h1 data-number="12" id="bibliography"><span class="header-section-number">12</span> References<a href="#bibliography" class="self-link"></a></h1>
+<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
+<div id="ref-bloomberg-clang" class="csl-entry" role="listitem">
+[bloomberg-clang] Bloomberg’s clang implementation of P2996. <a href="https://github.com/bloomberg/clang-p2996"><div class="csl-block">https://github.com/bloomberg/clang-p2996</div></a>
+</div>
+<div id="ref-daveed-keynote" class="csl-entry" role="listitem">
+[daveed-keynote] Daveed Vandevoorde’s closing CppCon2024 keynote. <a href="http://vandevoorde.com/CppCon2024.pdf"><div class="csl-block">http://vandevoorde.com/CppCon2024.pdf</div></a>
+</div>
+<div id="ref-daw_json_link" class="csl-entry" role="listitem">
+[daw_json_link] daw_json_link. <a href="https://github.com/beached/daw_json_link/blob/85f5f3f3d15a27fa000733f758b157d2267a74c8/include/daw/json/daw_json_reflection.h"><div class="csl-block">https://github.com/beached/daw_json_link/blob/85f5f3f3d15a27fa000733f758b157d2267a74c8/include/daw/json/daw_json_reflection.h</div></a>
+</div>
+<div id="ref-lexy" class="csl-entry" role="listitem">
+[lexy] lexy. <a href="https://github.com/foonathan/lexy"><div class="csl-block">https://github.com/foonathan/lexy</div></a>
+</div>
+<div id="ref-P2996" class="csl-entry" role="listitem">
+[P2996R7] Barry Revzin, Wyatt Childers, Peter Dimov, Andrew Sutton,
+Faisal Vali, Daveed Vandevoorde, and Dan Katz. Reflection for C++26. <a href="https://wg21.link/P2996R7"><div class="csl-block">https://wg21.link/P2996R7</div></a>
+</div>
+<div id="ref-prototype-impl" class="csl-entry" role="listitem">
+[prototype-impl] prototype implementation. <a href="https://gist.github.com/foonathan/457bd0073cfde568e446eb4d42ec87fe"><div class="csl-block">https://gist.github.com/foonathan/457bd0073cfde568e446eb4d42ec87fe</div></a>
+</div>
+</div>
+</div>
+</div>
+</body>
+</html>
