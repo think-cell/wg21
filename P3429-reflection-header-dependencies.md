@@ -1,6 +1,6 @@
 ---
 title: "&lt;meta&gt; should minimize standard library dependencies"
-document: P4329R0
+document: P3429R1
 date: 2024-10-15
 audience: LEWG
 author:
@@ -15,9 +15,22 @@ As specified, this library API requires other standard library facilities such a
 We propose minimizing these standard library facilities to ensure more wide-spread adoption.
 In our testing, the proposed changes have only minimal impact on user code.
 
+# Revision History
+
+## R0
+
+Initial revision.
+
+## R1
+
+* Changed the number of typos.
+* Rebase on top of P2996R8; removing now redundant polls 1.3, 3, and 4.1.
+* Expanded motivation.
+* Discussed alternatives to `info_array`.
+
 # Background
 
-[@P2996] adds reflection library support in form of the `<meta>` header.
+[@P2996] adds a new `<meta>` header for reflection library support.
 The functions introduced there are essentially wrappers around compiler built-ins and thus cannot be implemented by users:
 People that want to use reflection have to use `<meta>` or directly reach for the compiler built-ins.
 `<meta>` thus has the same status as `<type_traits>`, `<coroutine>`, `<initializer_list>`, and `<source_location>`.
@@ -32,23 +45,34 @@ Right now, it is specified to include:
 
 In addition, the interface requires:
 
-* `std::size_t` in various places
+* `std::size_t`, `std::ptrdiff_t` in various places
 * `<compare>` (for `member_offsets` defaulted comparison operator)
 * `std::optional` (in `data_member_options_t`)
-* `std::span` (in `define_static_array`)
 
 This means every implementation of `<meta>` is required to include the specified headers, and provide the definitions for the specified types.
 In addition, the compiler needs to be able to construct and manipulate objects of various standard library types at compile-time.
 
 # Motivation
 
-Reflection is primarily a language feature that requires some standard library APIs.
-However, the C++ language has more users than the C++ standard library; developers in some domains (e.g. gamedev) make heavy use of C++ but avoid using the standard library.
-It is not for us in the committee to say whether they are justified in their reasons, but we have a duty to represent the interests of all our users and not just the subset of users that have representation in WG21.
-If we can better support everyone at minimal cost, we should do so or risk seeming even more out of touch.
+The C++ standard can be split into three parts:
 
-To that end, the `<meta>` header should minimize standard library dependencies.
+* The language, which has to be implemented by the compiler.
+* The "normal" standard library, which is implemented by the standard library vendor, but can be re-implemented by anyone.
+* The language support library, which requires co-operation with the compiler, so can only reasonable be implemented by the standard library vendor.
+  This includes `<type_traits>`, `<coroutine>`, `<initializer_list>`, `<source_location>`, and now `<meta>`.
+
+The existence of the third category means that in order to fully use all C++ language features, you not only need a C++ compiler, but also some standard library implementation to essentially provide a different spelling for language features.
+This is not too bad for small headers like `<initializer_list>`, but `<meta>` as specified right now pulls in a lot of standard library machinery.
+And in a way, any standard library feature included by `<meta>` (and other language support headers) is itself elevated to the language support library:
+To make use of `<meta>`, you also need a (compile-time) implementation of `std::vector`, `std::string_view`, and `std::optional`.
+This couples more the standard library and the language even more than it already is and makes it harder to use C++ without the standard library.
+
+We thus propose that `<meta>` should minimize standard library dependencies.
 This has the following advantages:
+
+* **We serve all our users:** Developers in some domains (e.g. gamedev, embedded) make heavy use of C++ but avoid using the standard library.
+  It is not for us in the committee to say whether they are justified in their reasons, but we have a duty to represent the interests of all our users and not just the subset of users that have representation in WG21.
+  If we can better support everyone at minimal cost, we should do so or risk seeming even more out of touch.
 
 * **Better compile-times due to reduced header inclusion:** A translation unit that does not require `<ranges>` or `<vector>` should not be forced to pay the (significant!) price for including them.
   This is especially important as reflection by design has to be used in a header file, and we anticipate wide-spread use of reflection in core utility libraries included in most translation units.
@@ -62,6 +86,7 @@ This has the following advantages:
 
   Modules may solve this problem in the long-term, but adopting modules requires changes to the build system, which makes it more difficult than "just" updating the compiler to start using reflection.
   It is not entirely unreasonable to think that some companies will start using reflection before they start using modules.
+  In addition, some libraries will have to support both module and non-module builds for a long time, but can eagerly adopt reflection by simply querying for the feature test macro.
 
 * **Better compile-times due to simpler API types:** All reflection APIs are `consteval`, so if a function e.g. returns a `std::vector`, the compiler has to construct this object at compile-time.
   This is expensive, as the memory layout and behavior of `std::vector` is controlled by standard library implementations the compiler frontend does not necessarily have full control over.
@@ -80,6 +105,18 @@ This has the following advantages:
 
   With a custom result type, a smart compiler implementation can employ copy-on-write techniques to avoid unnecessary copies.
 
+* **Usable in more contexts:** At think-cell, we overwrite the `_ASSERT` macros from the Windows APIs to use our custom assertion reporting mechanism.
+  This is done by re-defining the macros before any Windows headers are included that would define `_ASSERT` themselves.
+  Our definition of `_ASSERT` thus must not itself include any Windows headers, which means we have to be very careful about the standard library headers it includes.
+  For example, we cannot include headers like `<ranges>` or `<string_view>`.
+  If `<meta>` includes them, we cannot use reflection in our assertion definition, which is something we would like to do.
+
+  Note that there is not any way to hide a dependency of `<meta>`: As it requires templates, any use of reflection has to be in a header file.
+  And as we want to define a macro, we cannot use modules either.
+  If `<meta>` pulls in a header that already defines `_ASSERT`, we cannot use reflection there.
+
+  We are probably not the only ones that have a use case like this. Minimizing the standard library dependencies is the only option. 
+
 * **Precedence:** `std::source_location::file_name()` does not return a `std::string_view`, but a `const char*` instead.
   Proposed `std::contracts::contract_violation::comment()` does not return a `std::string_view`, but a `const char*` instead.
   So why should `std::meta::identifier_of()` return a `std::string_view`?
@@ -88,10 +125,11 @@ This has the following advantages:
 
 We therefore propose that `<meta>` should minimize standard library dependencies.
 In this paper, we exhaustively enumerate every dependency it has and suggest an alternative.
-Note that we are not proposing to force the implementation to avoid standard library dependencies in their implementations.
-We are just making it possible for them to do so.
+Note that we are not proposing to force the implementation to avoid standard library dependencies in their implementations; we are just making it possible for them to do so.
 
-All wording in this paper is relative to [@P2996].
+In general, we hope that this would lead to more awareness when designing language support library features and treat them differently from the rest of the standard library.
+Ideally, a standard library facility that requires compiler support should not use a standard library facility that does not, yet it unnecessary bloats the language support subset of the standard library.
+We hope that this paper provides precedence for a future LEWG policy to that effect.
 
 # Implementation experience
 
@@ -124,6 +162,8 @@ Similarly, we investigated the following examples of [@daveed-keynote]:
 * [command-line argument parsing](https://godbolt.org/z/YrEf4TM1x) (additional `std::ranges::to<std::vector>` needed)
 
 We also manually investigated the reflection implementation of [@daw_json_link], which requires an additional `std::ranges::to<std::vector>` in the implementation of a reflection function that has since been added to [@P2996].
+
+All wording in this paper is relative to [@P2996].
 
 # Baseline: Depending on `<initializer_list>`, `<compare>` and `std::size_t` is perfectly fine
 
@@ -201,10 +241,10 @@ Modify the new subsection in 21 [meta] after 21.3 [type.traits]:
 -    concept reflection_range = see below;
 +    concept @_reflection-range_@ = see below; // @_exposition-only_@
 
--  template <@_reflection-range_@ R = initializer_list<info>>
+-  template <@_reflection_range_@ R = initializer_list<info>>
 +  template <@_reflection-range_@ R = initializer_list<info>>
     consteval bool can_substitute(info templ, R&& arguments);
--  template <@_reflection-range_@ R = initializer_list<info>>
+-  template <@_reflection_range_@ R = initializer_list<info>>
 +  template <@_reflection-range_@ R = initializer_list<info>>
     consteval info substitute(info templ, R&& arguments);
 …
@@ -311,47 +351,9 @@ A type `R` models the exposition-only concept `@_reflection-range_@` if a range-
 
 :::
 
-## Poll 1.3: Replace `ranges::input_range`
+## Poll 1.3
 
-Similarly, the `define_static_array` function is constrained by `ranges::input_range`.
-With the same logic as above, this should be generalized to require only the range-based for loop to work.
-
-## User impact
-
-Positive, functions accept strictly more types than before (see above).
-
-## Implementation impact
-
-Implementations need to write a custom concept instead of using `ranges::input_range`.
-
-### Wording
-
-Modify [meta.reflection.define_static] Static array generation
-
-```diff
--template<ranges::input_range R>
-+template<typename R>
--    consteval span<const ranges::range_value_t<R>> define_static_array(R&& r);
-+    consteval @_see-below_@ define_static_array(R&& r);
-```
-
-And change the wording as follows:
-
-::: add
-
-[4]{.pnum} *Constraints:* A range-based for loop statement [stmt.ranged] `for (auto&& x : r) {}` is well-formed for an expression of type `R`.
-
-[*Note*: This requires checking whether the `begin-expr` and `end-expr` as defined in [stmt.ranged] are well-formed and that the resulting types support `!=`, `++`, and `*` as needed in the loop transformation. — *end note*]
-
-[5]{.pnum} Given `for (auto&& x : r) {}`, let `@_D_@` be the number of times the range-based for loop is iterated, `@_T_@` be the type `decay_t<decltype(x)>`, and `@_S_@` be a constexpr variable of array type with static storage duration, whose elements are of type `const @_T_@`, for which there exists some `k ≥ 0` such that `@_S_@[k + i] @_==_@ @_ri_@` for all 0 ≤ i < D where `ri` is the value of `x` on the `i`th iteration.
-
-[6]{.pnum} Returns: `span<const @_T_@>(addressof(@_S_@[k]), @_D_@)`
-
-[7]{.pnum} Implementations are encouraged to return the same object whenever the same the function is called with the same argument.
-
-:::
-
-And update the synopsis accordingly.
+Made redundant by P2996R8.
 
 # Poll 2: Replace `std::vector` by new `std::meta::info_array`
 
@@ -366,10 +368,6 @@ This simplifies the implementation further.
 For the vast majority of calls, this change is not noticeable:
 All they do is iterate over the result, compose it with other views, or apply range algorithms.
 For those users that do rely on having a mutable, growable container, they need to call `std::ranges::to<std::vector>`.
-
-The proposed wording adds all members of `std::array`, except for `fill` (which doesn't make sense) and `reverse_iterator` (would introduce more standard library dependencies).
-That way it also provides all functions provided by `std::ranges::view_interface` for a contiguous range (except for `operator bool`, which is weird for a container).
-Alternatively, the minimum interface could model `std::initializer_list` and only provide `begin`/`end` and `size`.
 
 ## User impact
 
@@ -459,6 +457,24 @@ Users that do not wish to modify the container and only iterate over it are not 
 An implementation that does not care about decoupling dependencies just need to provide a wrapper class over `std::vector`.
 In our prototype implementation, it was done in [30 lines of code](https://gist.github.com/foonathan/457bd0073cfde568e446eb4d42ec87fe#file-meta-L431-L462).
 A production-ready implementation can then also optimize `std::ranges::to` to avoid additional memory allocations and copies when the user wants a `std::vector`.
+
+## Alternative designs
+
+The proposed wording adds all members of `std::array`, except for `fill` (which doesn't make sense) and `reverse_iterator` (would introduce more standard library dependencies).
+That way it also provides all functions provided by `std::ranges::view_interface` for a contiguous range (except for `operator bool`, which is weird for a container).
+Alternatively, the minimum interface could model `std::initializer_list` and only provide `begin`/`end` and `size`.
+
+Instead of specifying a new type `std::meta::info_array`, we could solve the problem in a different way:
+
+* The return type of `std::meta::members_of` and co could be an implementation-defined type guaranteed to model some concepts (for example `std::ranges::contiguous_range`).
+  Then an implementation can simply return `std::vector` directly if it does not care about dependencies.
+  The downside of this approach is that user might rely on the existence of specific member functions that are not guaranteed and accidentally write non-portable code.
+
+* `std::meta::members_of` and co could return a reference to an array of `std::meta::info` objects with suitable lifetime.
+  The compiler implementation would synthesize the array directly and does not have to create any library-defined type at all.
+  This would fully decouple the compiler API from the standard library, but there might be implementation concerns.
+
+The author does not have a strong opinion on either alternative or `std::meta::info_array` but prefers them all over returning `std::vector` directly.
 
 ## Wording
 
@@ -550,117 +566,25 @@ etc. etc.
 
 Update the other sections accordingly to use `info_array` instead of `vector<info>`.
 
-# Poll 3: Replace `std::span` by `std::initializer_list`
+# Poll 3
 
-`define_static_array` returns a `std::span` to the static array that is being defined.
-To reduce dependencies, this could be `std::initializer_list`.
-This has the additional benefit that you can pass it to `std::initializer_list` constructors.
-
-It is not clear to us how `define_static_array` would be used in the first place, since you cannot actually initialize an array with it.
-We could imagine changing the language to allow initilization of an array from a `consteval` `std::initializer_list` object, but allowing initialization from a `std::span` (and presumably arbitrary ranges) seems more involved.
-
-## User impact
-
-Users that want to e.g. index into the result of `define_static_array` need to use `.begin()[i]` instead or write `std::span(define_static_array(…))`.
-Users can now use `define_static_array` to more easily initialize containers.
-User that merely iterate over the result are not affected.
-
-## Implementation impact
-
-The implementation needs to add a way to construct a `std::initializer_list` from a pointer plus size, or change the compiler API to return `std::initializer_list` directly.
-
-## Wording
-
-Modify [meta.reflection.define_static] Static array generation and update the synopsis accordingly
-
-```diff
--template<ranges::input_range R>
-+template<typename R>
--    consteval span<const ranges::range_value_t<R>> define_static_array(R&& r);
-+    consteval initializer_list<ranges::range_value_t<R>> define_static_array(R&& r);
-```
-
-[4]{.pnum} *Constraints*: `is_constructible_v<ranges::range_value_t<R>, ranges::range_reference_t<R>>` is `true`.
-
-[5]{.pnum} Let `@_D_@` be `ranges::distance(r)` and `@_S_@` be a constexpr variable of array type with static storage duration, whose elements are of type `const ranges::range_value_t<R>`, for which there exists some `k ≥ 0` such that `@_S_@[k + i] == r[i]` for all `0 ≤ i < @_D_@`.
-
-[6]{.pnum} *Returns*: [`span(addressof(S[k]), D)`]{.rm}[An `initializer_list` object `il` where `il.begin() == @_S_@ + k` and `il.end() == @_S_@ + k + D`]{.add}.
-
-[7]{.pnum} Implementations are encouraged to return the same object whenever the same the function is called with the same argument.
+Made redundant by P2996R8.
 
 # Replace `std::[u8]string_view`
 
-## Poll 4.1 Replace `std::[u8]string_view` in argument positions by a generic argument
+## Poll 4.1
 
-`define_static_string` takes a `std::[u8]string_view`. The dependency can be avoided and the function be made more general if it instead accepts any range of characters.
-
-### User impact
-
-Positive, functions accept strictly more types than before.
-
-### Implementation impact
-
-Minimal. An implementation that does not care about minimizing dependencies can just construct a `std::string` with `std::ranges::to` and pass a `std::string_view` of that to the compiler API that has already been shown to be implementable.
-
-### Wording (if poll 1.3 has no consensus)
-
-Update [meta.reflection.define_static] Static array generation as follows.
-
-```diff
--consteval const char* define_static_string(string_view str);
-+template<ranges::input_range R> requires same_as<ranges::range_value_t<R>, char> && same_as<remove_cvref_t<ranges::range_reference_t<R>>, char>
-+consteval const char* define_static_string(R&& r);
--consteval const char8_t* define_static_string(u8string_view str);
-+template<ranges::input_range R> requires same_as<ranges::range_value_t<R>, char8_t> && same_as<remove_cvref_t<ranges::range_reference_t<R>>, char8_t>
-+consteval const char8_t* define_static_string(R&& r);
-```
-
-[1]{.pnum} [Let `@_str_@` be `ranges::to<string>(forward<R>(r))`.]{.add} Let `@_S_@` be a constexpr variable of array type with static storage duration, whose elements are of type `const char` or `const char8_t` respectively, for which there exists some `k ≥ 0` such that:
-
-* [1.1]{.pnum} `S[k + i] == str[i]` for all `0 ≤ i < str.size()`, and
-* [1.2]{.pnum} `S[k + str.size()]` == '\0'.
-
-[2]{.pnum} *Returns*: `&@_S_@[k]`
-
-[3]{.pnum} Implementations are encouraged to return the same object whenever the same variant of these functions is called with the same argument.
-
-And update the synopsis accordingly.
-
-### Wording (if poll 1.3 has consensus)
-
-Update [meta.reflection.define_static] Static array generation as follows.
-
-```diff
--consteval const char* define_static_string(string_view str);
--consteval const char8_t* define_static_string(string_view str);
-+template<typename R>
-+consteval const @_see-below_@* define_static_string(R&& str);
-```
-
-::: add
-
-[1]{.pnum} *Constraints:* A range-based for loop statement [stmt.ranged] `for (std::same_as<char> auto x : r) {}` or `for (std::same_as<char8_t> auto x : r) {}` is well-formed for an expression of type `R`.
-
-[*Note*: This requires checking whether the `begin-expr` and `end-expr` as defined in [stmt.ranged] are well-formed and that the resulting types support `!=`, `++`, and `*` as needed in the loop transformation. — *end note*]
-
-[2]{.pnum} Given `for (auto&& x : r) {}`, let `@_D_@` be the number of times the range-based for loop is iterated, `@_T_@` be the type `decay_t<decltype(x)>`, and `@_S_@` be a constexpr variable of array type with static storage duration, whose elements are of type `const @_T_@`, for which there exists some `k ≥ 0` such that `@_S_@[k + i] @_==_@ @_ri_@` for all 0 ≤ i < D, where `ri` is the value of `x` on the `i`th iteration, and `@_S_[k + D] == '\0'`.
-
-[3]{.pnum} *Returns:* `@_S_@[k]`.
-
-[4]{.pnum} Implementations are encouraged to return the same object whenever the same the function is called with the same argument.
-
-:::
-
-And update the synopsis accordingly.
+Made redundant by P2996R8.
 
 ## Poll 4.2: Replace `std::[u8]string_view` as return type with `const char[8_t]*`
 
-`[u8]identifier_of` and `[u8]display_string_of` return a `std::[u8]string_view`.
+`[u8]identifier_of`, `[u8]symbol_of` and `[u8]display_string_of` return a `std::[u8]string_view`.
 In addition, to the dependency problems, it is not guaranteed to be a null-terminated string, and even if it were, getting a null-terminated string out of a `std::string_view` requires an awkward `.data()` call and a comment explaining why it is null-terminated.
 Both problems are solved by returning a `const char[8_t]*` instead, just like `std::source_location::file()` does, which is a very similar function.
 
 The downside is that users who want one of the gazillion member functions have to manually create a `std::string_view` first.
-However, most calls probably forward the resulting identifier unchanged and are unaffected.
+However, most calls probably forward the resulting identifier unchanged and are unaffected; in our testing we have not found any.
+All the examples treat the identifier as an opaque blob that is being forwarded to some mechanism that handles `const char*` just fine.
 
 ### User impact
 
@@ -699,6 +623,13 @@ Modify the new subsection in 21 [meta] after 21.3 [type.traits]:
 
 ```diff
 …
+    // [meta.reflection.operators], operator representations
+    …
+-   consteval string_view symbol_of(operators op);
++   consteval const char* symbol_of(operators op);
+-   consteval u8string_view u8symbol_of(operators op);
++   consteval const char8_t* u8symbol_of(operators op);
+
     // [meta.reflection.names], reflection names and locations
     consteval bool has_identifier(info r);
 
@@ -716,7 +647,7 @@ Modify the new subsection in 21 [meta] after 21.3 [type.traits]:
 …
 ```
 
-And update [meta.reflection.names] accordingly.
+And update [meta.reflection.operators] and [meta.reflection.names] accordingly.
 
 # Poll 5: Re-design `data_member_spec`
 
@@ -731,7 +662,6 @@ Ignoring the dependencies, the proposed design has multiple other problems that 
 
 * The `name` member, if present, stores a copy of a user-provided string, which is then further copied into the compiler internal storage that represents a data member specification when calling `data_member_spec`.
 * It is an error to specify both `alignment` and `width` yet the API does nothing to prevent that.
-* Adding additional options is a potential ABI break if there are runtime functions that take or return a `data_member_options_t` (which is weird, but possible).
 
 A design that instead provides multiple creation functions combined with setters has none of those problems.
 
@@ -757,7 +687,7 @@ They return a builder object that can be further modified with setters and impli
 An implementation of `data_member_spec_t` that guards against ABI breaks can just store a single `info` object that represents the data already given,
 and modifies the compiler internal representation when calling `.name()` and `.no_unique_address()`.
 
-This requires also changes to `define_class` to accept a range of types convertible to `info`.
+This requires also changes to `define_aggregate` to accept a range of types convertible to `info`.
 
 ## User impact
 
@@ -768,13 +698,13 @@ The API changes dramatically, but it does not affect the convenience in any way.
 ### Before
 
 ```cpp
-define_class(^storage, {data_member_spec(^T, {.name = "foo", .no_unique_address = true})})
+define_aggregate(^storage, {data_member_spec(^T, {.name = "foo", .no_unique_address = true})})
 ```
 
 ### After
 
 ```cpp
-define_class(^storage, {data_member_spec(^T).name("foo").no_unique_address()})
+define_aggregate(^storage, {data_member_spec(^T).name("foo").no_unique_address()})
 ```
 
 :::
@@ -790,7 +720,7 @@ TBD
 ---
 references:
   - id: P2996
-    citation-label: P2996R7
+    citation-label: P2996R8
     title: "Reflection for C++26"
     author:
       - family: Revzin
@@ -807,7 +737,7 @@ references:
         given: Daveed
       - family: Katz
         given: Dan
-    URL: https://wg21.link/P2996R7
+    URL: https://wg21.link/P2996R8
   - id: bloomberg-clang
     citation-label: bloomberg-clang
     title: "Bloomberg's clang implementation of P2996"
