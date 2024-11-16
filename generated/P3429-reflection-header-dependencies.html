@@ -1209,10 +1209,8 @@ provide
 <code class="sourceCode default">begin</code>/<code class="sourceCode default">end</code>
 and <code class="sourceCode default">size</code>.</p>
 <p>Instead of specifying a new type
-<code class="sourceCode default">std::meta::info_array</code>, we could
-solve the problem in a different way:</p>
-<ul>
-<li><p>The return type of
+<code class="sourceCode default">std::meta::info_array</code>, the
+return type of
 <code class="sourceCode default">std::meta::members_of</code> and co
 could be an implementation-defined type guaranteed to model some
 concepts (for example
@@ -1221,17 +1219,8 @@ Then an implementation can simply return
 <code class="sourceCode default">std::vector</code> directly if it does
 not care about dependencies. The downside of this approach is that user
 might rely on the existence of specific member functions that are not
-guaranteed and accidentally write non-portable code.</p></li>
-<li><p><code class="sourceCode default">std::meta::members_of</code> and
-co could return a reference to an array of
-<code class="sourceCode default">std::meta::info</code> objects with
-suitable lifetime. The compiler implementation would synthesize the
-array directly and does not have to create any library-defined type at
-all. This would fully decouple the compiler API from the standard
-library, but there might be implementation concerns.</p></li>
-</ul>
-<p>The author does not have a strong opinion on either alternative or
-<code class="sourceCode default">std::meta::info_array</code> but
+guaranteed and accidentally write non-portable code.</p>
+<p>The author does not have a strong opinion on either alternative but
 prefers them all over returning
 <code class="sourceCode default">std::vector</code> directly.</p>
 <h2 data-number="9.4" id="wording-3"><span class="header-section-number">9.4</span> Wording<a href="#wording-3" class="self-link"></a></h2>

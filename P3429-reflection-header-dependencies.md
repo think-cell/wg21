@@ -115,7 +115,7 @@ This has the following advantages:
   And as we want to define a macro, we cannot use modules either.
   If `<meta>` pulls in a header that already defines `_ASSERT`, we cannot use reflection there.
 
-  We are probably not the only ones that have a use case like this. Minimizing the standard library dependencies is the only option. 
+  We are probably not the only ones that have a use case like this. Minimizing the standard library dependencies is the only option.
 
 * **Precedence:** `std::source_location::file_name()` does not return a `std::string_view`, but a `const char*` instead.
   Proposed `std::contracts::contract_violation::comment()` does not return a `std::string_view`, but a `const char*` instead.
@@ -464,17 +464,11 @@ The proposed wording adds all members of `std::array`, except for `fill` (which 
 That way it also provides all functions provided by `std::ranges::view_interface` for a contiguous range (except for `operator bool`, which is weird for a container).
 Alternatively, the minimum interface could model `std::initializer_list` and only provide `begin`/`end` and `size`.
 
-Instead of specifying a new type `std::meta::info_array`, we could solve the problem in a different way:
+Instead of specifying a new type `std::meta::info_array`, the return type of `std::meta::members_of` and co could be an implementation-defined type guaranteed to model some concepts (for example `std::ranges::contiguous_range`).
+Then an implementation can simply return `std::vector` directly if it does not care about dependencies.
+The downside of this approach is that user might rely on the existence of specific member functions that are not guaranteed and accidentally write non-portable code.
 
-* The return type of `std::meta::members_of` and co could be an implementation-defined type guaranteed to model some concepts (for example `std::ranges::contiguous_range`).
-  Then an implementation can simply return `std::vector` directly if it does not care about dependencies.
-  The downside of this approach is that user might rely on the existence of specific member functions that are not guaranteed and accidentally write non-portable code.
-
-* `std::meta::members_of` and co could return a reference to an array of `std::meta::info` objects with suitable lifetime.
-  The compiler implementation would synthesize the array directly and does not have to create any library-defined type at all.
-  This would fully decouple the compiler API from the standard library, but there might be implementation concerns.
-
-The author does not have a strong opinion on either alternative or `std::meta::info_array` but prefers them all over returning `std::vector` directly.
+The author does not have a strong opinion on either alternative but prefers them all over returning `std::vector` directly.
 
 ## Wording
 
