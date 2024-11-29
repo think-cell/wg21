@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="generator" content="mpark/wg21" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <meta name="dcterms.date" content="2024-10-15" />
+  <meta name="dcterms.date" content="2024-11-15" />
   <title>\&lt;meta\&gt; should minimize standard library
 dependencies</title>
   <style>
@@ -429,7 +429,7 @@ standard library dependencies</h1>
   </tr>
   <tr>
     <td>Date:</td>
-    <td>2024-10-15</td>
+    <td>2024-11-15</td>
   </tr>
   <tr>
     <td style="vertical-align:top">Project:</td>
@@ -478,21 +478,21 @@ from the wording</a>
 <ul>
 <li><a href="#poll-1.1-make-the-reflection_range-concept-exposition-only" id="toc-poll-1.1-make-the-reflection_range-concept-exposition-only"><span class="toc-section-number">8.1</span> Poll 1.1: Make the
 <code class="sourceCode default">reflection_range</code> concept
-exposition-only</a></li>
-<li><a href="#user-impact-1" id="toc-user-impact-1"><span class="toc-section-number">8.2</span> User impact</a></li>
-<li><a href="#implementation-impact-1" id="toc-implementation-impact-1"><span class="toc-section-number">8.3</span> Implementation impact</a>
+exposition-only</a>
 <ul>
-<li><a href="#wording-1" id="toc-wording-1"><span class="toc-section-number">8.3.1</span> Wording</a></li>
+<li><a href="#user-impact-1" id="toc-user-impact-1"><span class="toc-section-number">8.1.1</span> User impact</a></li>
+<li><a href="#implementation-impact-1" id="toc-implementation-impact-1"><span class="toc-section-number">8.1.2</span> Implementation impact</a></li>
+<li><a href="#wording-1" id="toc-wording-1"><span class="toc-section-number">8.1.3</span> Wording</a></li>
 </ul></li>
-<li><a href="#poll-1.2-change-the-_reflection_range_-concept-to-match-language-semantics" id="toc-poll-1.2-change-the-_reflection_range_-concept-to-match-language-semantics"><span class="toc-section-number">8.4</span> Poll 1.2: Change the
+<li><a href="#poll-1.2-change-the-_reflection_range_-concept-to-match-language-semantics" id="toc-poll-1.2-change-the-_reflection_range_-concept-to-match-language-semantics"><span class="toc-section-number">8.2</span> Poll 1.2: Change the
 <code class="sourceCode default"><em>reflection_range</em></code>
-concept to match language semantics</a></li>
-<li><a href="#user-impact-2" id="toc-user-impact-2"><span class="toc-section-number">8.5</span> User impact</a></li>
-<li><a href="#implementation-impact-2" id="toc-implementation-impact-2"><span class="toc-section-number">8.6</span> Implementation impact</a>
+concept to match language semantics</a>
 <ul>
-<li><a href="#wording-2" id="toc-wording-2"><span class="toc-section-number">8.6.1</span> Wording</a></li>
+<li><a href="#user-impact-2" id="toc-user-impact-2"><span class="toc-section-number">8.2.1</span> User impact</a></li>
+<li><a href="#implementation-impact-2" id="toc-implementation-impact-2"><span class="toc-section-number">8.2.2</span> Implementation impact</a></li>
+<li><a href="#wording-2" id="toc-wording-2"><span class="toc-section-number">8.2.3</span> Wording</a></li>
 </ul></li>
-<li><a href="#poll-1.3" id="toc-poll-1.3"><span class="toc-section-number">8.7</span> Poll 1.3</a></li>
+<li><a href="#poll-1.3" id="toc-poll-1.3"><span class="toc-section-number">8.3</span> Poll 1.3</a></li>
 </ul></li>
 <li><a href="#poll-2-replace-stdvector-by-new-stdmetainfo_array" id="toc-poll-2-replace-stdvector-by-new-stdmetainfo_array"><span class="toc-section-number">9</span> Poll 2: Replace
 <code class="sourceCode default">std::vector</code> by new
@@ -900,14 +900,14 @@ in-place, so even if we had a
 <code class="sourceCode default">ranges::input_range_of&lt;T&gt;</code>
 concept, <code class="sourceCode default">reflection_range</code> would
 not subsume it. Leaving it exposition-only gives us more leeway.</p>
-<h2 data-number="8.2" id="user-impact-1"><span class="header-section-number">8.2</span> User impact<a href="#user-impact-1" class="self-link"></a></h2>
+<h3 data-number="8.1.1" id="user-impact-1"><span class="header-section-number">8.1.1</span> User impact<a href="#user-impact-1" class="self-link"></a></h3>
 <p>Users that want to constrain a function on a range of
 <code class="sourceCode default">std::meta::info</code> objects need to
 write a similar concept themselves.</p>
-<h2 data-number="8.3" id="implementation-impact-1"><span class="header-section-number">8.3</span> Implementation impact<a href="#implementation-impact-1" class="self-link"></a></h2>
+<h3 data-number="8.1.2" id="implementation-impact-1"><span class="header-section-number">8.1.2</span> Implementation impact<a href="#implementation-impact-1" class="self-link"></a></h3>
 <p>None. An implementation presumably will still add the concept, just
 under a different name.</p>
-<h3 data-number="8.3.1" id="wording-1"><span class="header-section-number">8.3.1</span> Wording<a href="#wording-1" class="self-link"></a></h3>
+<h3 data-number="8.1.3" id="wording-1"><span class="header-section-number">8.1.3</span> Wording<a href="#wording-1" class="self-link"></a></h3>
 <p>Modify the new subsection in 21 [meta] after 21.3 [type.traits]:</p>
 <p><strong>Header <code class="sourceCode default">&lt;meta&gt;</code>
 synopsis</strong></p>
@@ -929,7 +929,7 @@ synopsis</strong></p>
 <p>And likewise replace all others of
 <code class="sourceCode default">reflection_range</code> with
 <code class="sourceCode default"><em>reflection-range</em></code>.</p>
-<h2 data-number="8.4" id="poll-1.2-change-the-_reflection_range_-concept-to-match-language-semantics"><span class="header-section-number">8.4</span> Poll 1.2: Change the
+<h2 data-number="8.2" id="poll-1.2-change-the-_reflection_range_-concept-to-match-language-semantics"><span class="header-section-number">8.2</span> Poll 1.2: Change the
 <code class="sourceCode default"><em>reflection_range</em></code>
 concept to match language semantics<a href="#poll-1.2-change-the-_reflection_range_-concept-to-match-language-semantics" class="self-link"></a></h2>
 <p>As specified,
@@ -949,7 +949,7 @@ supported by the range-based for-loop. For an interface that is supposed
 to be low-level and close to the compiler, it can make sense to instead
 follow the language semantics, and not the standard library
 semantics.</p>
-<h2 data-number="8.5" id="user-impact-2"><span class="header-section-number">8.5</span> User impact<a href="#user-impact-2" class="self-link"></a></h2>
+<h3 data-number="8.2.1" id="user-impact-2"><span class="header-section-number">8.2.1</span> User impact<a href="#user-impact-2" class="self-link"></a></h3>
 <p>Positive, functions accept strictly more types than before.</p>
 <table>
 <thead>
@@ -1021,10 +1021,10 @@ semantics.</p>
 </tr>
 </tbody>
 </table>
-<h2 data-number="8.6" id="implementation-impact-2"><span class="header-section-number">8.6</span> Implementation impact<a href="#implementation-impact-2" class="self-link"></a></h2>
+<h3 data-number="8.2.2" id="implementation-impact-2"><span class="header-section-number">8.2.2</span> Implementation impact<a href="#implementation-impact-2" class="self-link"></a></h3>
 <p>Implementations need to write a custom concept instead of using
 <code class="sourceCode default">ranges::input_range</code>.</p>
-<h3 data-number="8.6.1" id="wording-2"><span class="header-section-number">8.6.1</span> Wording<a href="#wording-2" class="self-link"></a></h3>
+<h3 data-number="8.2.3" id="wording-2"><span class="header-section-number">8.2.3</span> Wording<a href="#wording-2" class="self-link"></a></h3>
 <p>Modify [meta.reflection.substitute] Reflection substitution</p>
 <div>
 <div class="sourceCode" id="cb5"><pre class="sourceCode diff"><code class="sourceCode diff"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>template &lt;class R&gt;</span>
@@ -1050,7 +1050,7 @@ is well-formed for an expression of type
 <code class="sourceCode default">*</code> as needed in the loop
 transformation. — <em>end note</em>]</p>
 </div>
-<h2 data-number="8.7" id="poll-1.3"><span class="header-section-number">8.7</span> Poll 1.3<a href="#poll-1.3" class="self-link"></a></h2>
+<h2 data-number="8.3" id="poll-1.3"><span class="header-section-number">8.3</span> Poll 1.3<a href="#poll-1.3" class="self-link"></a></h2>
 <p>Made redundant by P2996R8.</p>
 <h1 data-number="9" id="poll-2-replace-stdvector-by-new-stdmetainfo_array"><span class="header-section-number">9</span> Poll 2: Replace
 <code class="sourceCode default">std::vector</code> by new

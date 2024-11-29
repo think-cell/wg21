@@ -1,7 +1,7 @@
 ---
 title: "&lt;meta&gt; should minimize standard library dependencies"
 document: P3429R1
-date: 2024-10-15
+date: 2024-11-15
 audience: LEWG
 author:
   - name: Jonathan Müller (think-cell)
@@ -220,11 +220,11 @@ However, this problem is better solved by adding a generic `ranges::input_range_
 Exposing the ad-hoc concept right now as-is would also freeze it in-place, so even if we had a `ranges::input_range_of<T>` concept, `reflection_range` would not subsume it.
 Leaving it exposition-only gives us more leeway.
 
-## User impact
+### User impact
 
 Users that want to constrain a function on a range of `std::meta::info` objects need to write a similar concept themselves.
 
-## Implementation impact
+### Implementation impact
 
 None. An implementation presumably will still add the concept, just under a different name.
 
@@ -262,7 +262,7 @@ People that don't care about the standard library range concepts, still want to 
 They thus might have range types that don't model any of the standard library range concepts, but are still supported by the range-based for-loop.
 For an interface that is supposed to be low-level and close to the compiler, it can make sense to instead follow the language semantics, and not the standard library semantics.
 
-## User impact
+### User impact
 
 Positive, functions accept strictly more types than before.
 
@@ -326,7 +326,7 @@ auto result = substitute(info, MyRange{});
 
 :::
 
-## Implementation impact
+### Implementation impact
 
 Implementations need to write a custom concept instead of using `ranges::input_range`.
 
