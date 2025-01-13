@@ -1,10 +1,10 @@
 ---
 title: "An infinite range concept"
-document: D3555R0
+document: P3555R0
 date: today
 audience: SG9
 author:
-  - name: Jonathan Müller
+  - name: Jonathan Müller (think-cell)
     email: <foonathan@jonathanmueller.dev>
 ---
 
@@ -97,7 +97,7 @@ In our proposal, a range can have only the following cardinalities:
 Known finite size
 : corresponding to the `ranges::sized_range`
 
-Infinite size 
+Infinite size
 : corresponding to the newly proposed `ranges::infinite_range`
 
 Unknown
@@ -105,11 +105,11 @@ Unknown
 
 Compared to the [@range-v3] model, a range can no longer have an unknown but finite size.
 This means that `not ranges::infinite_range` does not mean "finite range" it means "finite range or infinite range that we couldn't detect".
-For example, `views::filter` can be finite (when filtering a finite range) or infinite (when filtering an infinite range).
+For example, `views::filter` can be finite (when filtering a finite range) or infinite (when filtering an infinite range and keeping an infinite subset of elements).
 However, when it is finite, we do not know what size it is, so it cannot model `ranges::sized_range`.
 
 The benefit of our proposal is reduced implementation complexity; fewer views need to propagate cardinality information than in the range-v3 model.
-We believe that knowing that a range is definitely finite is not particularly useful.
+We also believe that knowing that a range is definitely finite is not particularly useful.
 The inverse, knowing that a range is definitely infinite, is enough to catch infinite loops and omit bounds checks.
 
 ## The `ranges::infinite_range` concept
@@ -159,7 +159,7 @@ namespace std { // or std::ranges
 ```
 
 `ranges::infinite_range` is then modeled if and only if `size()` returns that tag type.
-Like `ranges::size` we check for member and non-member `size()`; unlike `ranges::size` we don't need to worry about arrays (definitely finite), random access ranges with sized sentinel (definitely finite), or `disable_sized_range` (if you return a `infinite_tag_t` you better use the semantics we want!).
+Like `ranges::size` we check for member and non-member `size()`; unlike `ranges::size` we don't need to worry about arrays (definitely finite), random access ranges with sized sentinel (definitely finite), or `disable_sized_range` (if you return an `infinite_tag_t` you better use the semantics we want!).
 
 ```cpp
 namespace std::ranges {
@@ -222,7 +222,7 @@ public:
 };
 ```
 
-With option A, we would need to add a separate specialization for `enable_infinite_range`.
+With option A, we would need to additionally write a separate specialization for `enable_infinite_range`.
 
 The need for a `potentially_infinite_size()` function then makes one wonder: what if `ranges::size` could also return that?
 
@@ -232,7 +232,9 @@ Under this option, we still have the `infinite_tag_t`, but we relax `std::ranges
 When it delegates to `.size()` or ADL-`size()`, it also allows `infinite_tag_t`.
 We also add a case to return `infinite_tag`:
 
-> Given a subexpression `E` with type `T`, let `t` be an lvalue that denotes the reified object for `E`.
+[range.prim.size]
+
+> [2]{.pnum} Given a subexpression `E` with type `T`, let `t` be an lvalue that denotes the reified object for `E`.
 > Then:
 >
 > * If `T` is an array of unknown bound ([dcl.array]), `ranges​::​size(E)` is ill-formed.
@@ -281,6 +283,8 @@ However, we break assumptions about an equivalence between `ranges::sized_range`
 Badly constrained generic code might have called `ranges::size` unconditionally.
 But again, this just means trading one error message (`ranges::size` does not exist) to anther one (`infinite_tag_t` is not an integer).
 
+However, re-using `ranges::size` like that might be confusing.
+
 ## Propagating cardinality in range factories
 
 `empty_view` and `single_view` are definitely finite, so don't need to change.
@@ -292,10 +296,10 @@ We therefore do not propose any changes here.
 If the sentinel type is `unreachable_sentinel_t`, it will model `ranges::infinite_range` automatically.
 Otherwise, the cardinality is unknown and cannot be easily derived as we lost information about the range type the iterators came from.
 We could extend the `ranges::subrange_kind` enumeration to add an additional `subrange_kind::infinite` value.
-Just like an `subrange_kind::unsized` subrange, it would not store a size value, but unconditionally model `ranges::infinite_range`.
+Similar to`subrange_kind::unsized` subrange it would not store a size value, but it would unconditionally model `ranges::infinite_range`.
 As a result, constructing a `subrange_kind::infinite` subrange has a precondition that the range is actually infinite.
 Moreover, this precondition is safety critical as an implementation might choose to elide bounds checks for infinite range access.
-We therefore do not propose any changes to `subrange` in this paper. That option can always be explored later.
+We therefore do not propose any changes to `subrange` in this paper; that option can always be explored later.
 
 ## Propagating cardinality in range adaptors
 
@@ -338,15 +342,15 @@ The remaining range adaptors require more detailed discussion.
 
 ### `join_view` and `join_with_view`
 
-We propose that `join_view` models `ranges::infinite_range` if the underlying outer range models `ranges::infinite_range` (joining infinitely many things together is definitely infinite).
+We propose that `join_view` models `ranges::infinite_range` if and only if the underlying outer range models `ranges::infinite_range` (joining infinitely many things together is definitely infinite).
 Note that the cardinality is unknown if only the underlying inner range models `ranges::infinite_range`:
 The outer range could be empty in which case `join_view` is empty.
 
-The same logic applies to `join_with_view`.
-Note that here it is also not enough to only know that the separator models `ranges::infinite_range` for the same reason.
-
 If we have a mechanism to statically determine whether a range is non-empty, we could have `join_view` model `ranges::infinite_range` in more cases.
 However, we do not propose such a mechanism at this time.
+
+The same logic applies to `join_with_view`.
+Note that there it is also not enough to only know that the separator models `ranges::infinite_range` for the same reason.
 
 ### `concat_view`
 
@@ -356,18 +360,30 @@ We propose that `concat_view` models `ranges::infinite_range` if at least one of
 
 We propose that `zip_view` and `zip_transform_view` model `ranges::infinite_range` if all of the underlying ranges model `ranges::infinite_range`.
 
-## Statically catch buggy infinite loops
+## Using `ranges::infinite_range`
+
+### Statically catch buggy infinite loops
 
 Once `ranges::infinite_range` exist, we can statically catch buggy infinite loops.
 Technically, an implementation is allowed to do that as a matter of QoI due to the guarantees in [intro.progress]:
 If an algorithm or view has an infinite loop without side-effects, the behavior is undefined, and undefined behavior can be lifted into compile-time errors.
 
 However, given that an issue was already filed for `views::reverse`, we should mandate a detection at least for that view adaptor.
-We therefore propose that `views::reverse` is ill-formed for ranges modeling `ranges::infinite_range` but not `ranges::common_range`, resolving [@LWG4019].
+We therefore propose that `views::reverse` is ill-formed for ranges modeling `ranges::infinite_range` but not also `ranges::common_range`, resolving [@LWG4019].
 
 Preventing infinite ranges in other situations requires implementation experience and has to be done more careful.
 For example, passing an infinite range to `std::ranges::for_each` is fine if the predicate has side effects, but calling `std::ranges::sort` on it is an error (unless the user does something funky with the comparison or swap).
 We therefore do not propose additional infinite loop detection.
+
+### Parallel binary transform
+
+As [@P3179R4] is still in-flight, we do not propose any changes to it in this paper.
+We expect harmonization to appear in a follow-up paper.
+
+### Bounds check elimination
+
+Optimizations to eliminate bounds checks for infinite ranges are QoI and do not need to be mandated.
+We expect vendors to implement them once the concept is available.
 
 # Wording
 

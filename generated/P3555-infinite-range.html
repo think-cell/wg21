@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="generator" content="mpark/wg21" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <meta name="dcterms.date" content="2025-01-03" />
+  <meta name="dcterms.date" content="2025-01-13" />
   <title>An infinite range concept</title>
   <style>
 code{white-space: pre-wrap;}
@@ -424,11 +424,11 @@ concept</h1>
 <table style="border:none;float:right">
   <tr>
     <td>Document #:</td>
-    <td>D3555R0</td>
+    <td>P3555R0</td>
   </tr>
   <tr>
     <td>Date:</td>
-    <td>2025-01-03</td>
+    <td>2025-01-13</td>
   </tr>
   <tr>
     <td style="vertical-align:top">Project:</td>
@@ -443,7 +443,7 @@ concept</h1>
   <tr>
     <td style="vertical-align:top">Reply-to:</td>
     <td>
-      Jonathan Müller<br>&lt;<a href="mailto:foonathan@jonathanmueller.dev" class="email">foonathan@jonathanmueller.dev</a>&gt;<br>
+      Jonathan Müller (think-cell)<br>&lt;<a href="mailto:foonathan@jonathanmueller.dev" class="email">foonathan@jonathanmueller.dev</a>&gt;<br>
     </td>
   </tr>
 </table>
@@ -490,8 +490,16 @@ adaptors</a>
 <code class="sourceCode default">zip_view</code> and
 <code class="sourceCode default">zip_transform_view</code></a></li>
 </ul></li>
-<li><a href="#statically-catch-buggy-infinite-loops-1" id="toc-statically-catch-buggy-infinite-loops-1"><span class="toc-section-number">4.4</span> Statically catch buggy infinite
+<li><a href="#using-rangesinfinite_range" id="toc-using-rangesinfinite_range"><span class="toc-section-number">4.4</span> Using
+<code class="sourceCode default">ranges::infinite_range</code></a>
+<ul>
+<li><a href="#statically-catch-buggy-infinite-loops-1" id="toc-statically-catch-buggy-infinite-loops-1"><span class="toc-section-number">4.4.1</span> Statically catch buggy infinite
 loops</a></li>
+<li><a href="#parallel-binary-transform-1" id="toc-parallel-binary-transform-1"><span class="toc-section-number">4.4.2</span> Parallel binary
+transform</a></li>
+<li><a href="#bounds-check-elimination" id="toc-bounds-check-elimination"><span class="toc-section-number">4.4.3</span> Bounds check
+elimination</a></li>
+</ul></li>
 </ul></li>
 <li><a href="#wording" id="toc-wording"><span class="toc-section-number">5</span> Wording</a></li>
 <li><a href="#bibliography" id="toc-bibliography"><span class="toc-section-number">6</span> References</a></li>
@@ -633,12 +641,12 @@ not mean “finite range” it means “finite range or infinite range that we
 couldn’t detect”. For example,
 <code class="sourceCode default">views::filter</code> can be finite
 (when filtering a finite range) or infinite (when filtering an infinite
-range). However, when it is finite, we do not know what size it is, so
-it cannot model
+range and keeping an infinite subset of elements). However, when it is
+finite, we do not know what size it is, so it cannot model
 <code class="sourceCode default">ranges::sized_range</code>.</p>
 <p>The benefit of our proposal is reduced implementation complexity;
 fewer views need to propagate cardinality information than in the
-range-v3 model. We believe that knowing that a range is definitely
+range-v3 model. We also believe that knowing that a range is definitely
 finite is not particularly useful. The inverse, knowing that a range is
 definitely infinite, is enough to catch infinite loops and omit bounds
 checks.</p>
@@ -703,7 +711,7 @@ unlike <code class="sourceCode default">ranges::size</code> we don’t
 need to worry about arrays (definitely finite), random access ranges
 with sized sentinel (definitely finite), or
 <code class="sourceCode default">disable_sized_range</code> (if you
-return a <code class="sourceCode default">infinite_tag_t</code> you
+return an <code class="sourceCode default">infinite_tag_t</code> you
 better use the semantics we want!).</p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">namespace</span> std<span class="op">::</span>ranges <span class="op">{</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">template</span> <span class="op">&lt;</span><span class="kw">class</span> R<span class="op">&gt;</span></span>
@@ -762,7 +770,8 @@ size and infinite-ness is then trivial:</p>
 <span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="va">+    auto size() const requires detail::enable_size&lt;R&gt; { return detail::potentially_infinite_size(_r); }</span></span>
 <span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>};</span></code></pre></div>
 </div>
-<p>With option A, we would need to add a separate specialization for
+<p>With option A, we would need to additionally write a separate
+specialization for
 <code class="sourceCode default">enable_infinite_range</code>.</p>
 <p>The need for a
 <code class="sourceCode default">potentially_infinite_size()</code>
@@ -778,8 +787,10 @@ delegates to <code class="sourceCode default">.size()</code> or
 ADL-<code class="sourceCode default">size()</code>, it also allows
 <code class="sourceCode default">infinite_tag_t</code>. We also add a
 case to return <code class="sourceCode default">infinite_tag</code>:</p>
+<p>[range.prim.size]</p>
 <blockquote>
-<p>Given a subexpression <code class="sourceCode default">E</code> with
+<p><span class="marginalizedparent"><a class="marginalized">2</a></span>
+Given a subexpression <code class="sourceCode default">E</code> with
 type <code class="sourceCode default">T</code>, let
 <code class="sourceCode default">t</code> be an lvalue that denotes the
 reified object for <code class="sourceCode default">E</code>. Then:</p>
@@ -863,6 +874,9 @@ But again, this just means trading one error message
 (<code class="sourceCode default">ranges::size</code> does not exist) to
 anther one (<code class="sourceCode default">infinite_tag_t</code> is
 not an integer).</p>
+<p>However, re-using
+<code class="sourceCode default">ranges::size</code> like that might be
+confusing.</p>
 <h2 data-number="4.2" id="propagating-cardinality-in-range-factories"><span class="header-section-number">4.2</span> Propagating cardinality in
 range factories<a href="#propagating-cardinality-in-range-factories" class="self-link"></a></h2>
 <p><code class="sourceCode default">empty_view</code> and
@@ -887,17 +901,16 @@ came from. We could extend the
 <code class="sourceCode default">ranges::subrange_kind</code>
 enumeration to add an additional
 <code class="sourceCode default">subrange_kind::infinite</code> value.
-Just like an
-<code class="sourceCode default">subrange_kind::unsized</code> subrange,
-it would not store a size value, but unconditionally model
-<code class="sourceCode default">ranges::infinite_range</code>. As a
-result, constructing a
+Similar to<code class="sourceCode default">subrange_kind::unsized</code>
+subrange it would not store a size value, but it would unconditionally
+model <code class="sourceCode default">ranges::infinite_range</code>. As
+a result, constructing a
 <code class="sourceCode default">subrange_kind::infinite</code> subrange
 has a precondition that the range is actually infinite. Moreover, this
 precondition is safety critical as an implementation might choose to
 elide bounds checks for infinite range access. We therefore do not
 propose any changes to <code class="sourceCode default">subrange</code>
-in this paper. That option can always be explored later.</p>
+in this paper; that option can always be explored later.</p>
 <h2 data-number="4.3" id="propagating-cardinality-in-range-adaptors"><span class="header-section-number">4.3</span> Propagating cardinality in
 range adaptors<a href="#propagating-cardinality-in-range-adaptors" class="self-link"></a></h2>
 <blockquote>
@@ -948,23 +961,23 @@ cardinality)</li>
 <code class="sourceCode default">join_with_view</code><a href="#join_view-and-join_with_view" class="self-link"></a></h3>
 <p>We propose that <code class="sourceCode default">join_view</code>
 models <code class="sourceCode default">ranges::infinite_range</code> if
-the underlying outer range models
+and only if the underlying outer range models
 <code class="sourceCode default">ranges::infinite_range</code> (joining
 infinitely many things together is definitely infinite). Note that the
 cardinality is unknown if only the underlying inner range models
 <code class="sourceCode default">ranges::infinite_range</code>: The
 outer range could be empty in which case
 <code class="sourceCode default">join_view</code> is empty.</p>
-<p>The same logic applies to
-<code class="sourceCode default">join_with_view</code>. Note that here
-it is also not enough to only know that the separator models
-<code class="sourceCode default">ranges::infinite_range</code> for the
-same reason.</p>
 <p>If we have a mechanism to statically determine whether a range is
 non-empty, we could have
 <code class="sourceCode default">join_view</code> model
 <code class="sourceCode default">ranges::infinite_range</code> in more
 cases. However, we do not propose such a mechanism at this time.</p>
+<p>The same logic applies to
+<code class="sourceCode default">join_with_view</code>. Note that there
+it is also not enough to only know that the separator models
+<code class="sourceCode default">ranges::infinite_range</code> for the
+same reason.</p>
 <h3 data-number="4.3.2" id="concat_view"><span class="header-section-number">4.3.2</span>
 <code class="sourceCode default">concat_view</code><a href="#concat_view" class="self-link"></a></h3>
 <p>We propose that <code class="sourceCode default">concat_view</code>
@@ -979,8 +992,10 @@ at least one of the underlying ranges models
 <code class="sourceCode default">ranges::infinite_range</code> if all of
 the underlying ranges model
 <code class="sourceCode default">ranges::infinite_range</code>.</p>
-<h2 data-number="4.4" id="statically-catch-buggy-infinite-loops-1"><span class="header-section-number">4.4</span> Statically catch buggy infinite
-loops<a href="#statically-catch-buggy-infinite-loops-1" class="self-link"></a></h2>
+<h2 data-number="4.4" id="using-rangesinfinite_range"><span class="header-section-number">4.4</span> Using
+<code class="sourceCode default">ranges::infinite_range</code><a href="#using-rangesinfinite_range" class="self-link"></a></h2>
+<h3 data-number="4.4.1" id="statically-catch-buggy-infinite-loops-1"><span class="header-section-number">4.4.1</span> Statically catch buggy
+infinite loops<a href="#statically-catch-buggy-infinite-loops-1" class="self-link"></a></h3>
 <p>Once <code class="sourceCode default">ranges::infinite_range</code>
 exist, we can statically catch buggy infinite loops. Technically, an
 implementation is allowed to do that as a matter of QoI due to the
@@ -993,8 +1008,8 @@ mandate a detection at least for that view adaptor. We therefore propose
 that <code class="sourceCode default">views::reverse</code> is
 ill-formed for ranges modeling
 <code class="sourceCode default">ranges::infinite_range</code> but not
-<code class="sourceCode default">ranges::common_range</code>, resolving
-<span class="citation" data-cites="LWG4019">[<a href="#ref-LWG4019" role="doc-biblioref">LWG4019</a>]</span>.</p>
+also <code class="sourceCode default">ranges::common_range</code>,
+resolving <span class="citation" data-cites="LWG4019">[<a href="#ref-LWG4019" role="doc-biblioref">LWG4019</a>]</span>.</p>
 <p>Preventing infinite ranges in other situations requires
 implementation experience and has to be done more careful. For example,
 passing an infinite range to
@@ -1004,6 +1019,14 @@ the predicate has side effects, but calling
 error (unless the user does something funky with the comparison or
 swap). We therefore do not propose additional infinite loop
 detection.</p>
+<h3 data-number="4.4.2" id="parallel-binary-transform-1"><span class="header-section-number">4.4.2</span> Parallel binary transform<a href="#parallel-binary-transform-1" class="self-link"></a></h3>
+<p>As <span class="citation" data-cites="P3179R4">[<a href="#ref-P3179R4" role="doc-biblioref">P3179R4</a>]</span> is still
+in-flight, we do not propose any changes to it in this paper. We expect
+harmonization to appear in a follow-up paper.</p>
+<h3 data-number="4.4.3" id="bounds-check-elimination"><span class="header-section-number">4.4.3</span> Bounds check elimination<a href="#bounds-check-elimination" class="self-link"></a></h3>
+<p>Optimizations to eliminate bounds checks for infinite ranges are QoI
+and do not need to be mandated. We expect vendors to implement them once
+the concept is available.</p>
 <h1 data-number="5" id="wording"><span class="header-section-number">5</span> Wording<a href="#wording" class="self-link"></a></h1>
 <p>TBD</p>
 <h1 data-number="6" id="bibliography"><span class="header-section-number">6</span> References<a href="#bibliography" class="self-link"></a></h1>
