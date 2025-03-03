@@ -1,7 +1,7 @@
 ---
 title: "An infinite range concept"
 document: P3555R0
-date: today
+date: 2025-01-13
 audience: SG9
 author:
   - name: Jonathan Müller (think-cell)

@@ -1,7 +1,7 @@
 ---
 title: "Deprecate `const`-qualifier on begin/end of views"
-document: P4331R0
-date: today
+document: P3431R0
+date: 2025-01-13
 audience: SG9
 author:
   - name: Jonathan Müller (think-cell)
