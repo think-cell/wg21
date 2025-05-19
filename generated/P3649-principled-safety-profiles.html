@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang xml:lang>
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="mpark/wg21" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="dcterms.date" content="2025-05-19" />
+  <title>A principled approach to safety profiles</title>
+  <style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.csl-block{margin-left: 1.5em;}
+ul.task-list{list-style: none;}
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ background-color: #f6f8fa; }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span { } 
+code span.al { color: #ff0000; } 
+code span.an { } 
+code span.at { } 
+code span.bn { color: #9f6807; } 
+code span.bu { color: #9f6807; } 
+code span.cf { color: #00607c; } 
+code span.ch { color: #9f6807; } 
+code span.cn { } 
+code span.co { color: #008000; font-style: italic; } 
+code span.cv { color: #008000; font-style: italic; } 
+code span.do { color: #008000; } 
+code span.dt { color: #00607c; } 
+code span.dv { color: #9f6807; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #9f6807; } 
+code span.fu { } 
+code span.im { } 
+code span.in { color: #008000; } 
+code span.kw { color: #00607c; } 
+code span.op { color: #af1915; } 
+code span.ot { } 
+code span.pp { color: #6f4e37; } 
+code span.re { } 
+code span.sc { color: #9f6807; } 
+code span.ss { color: #9f6807; } 
+code span.st { color: #9f6807; } 
+code span.va { } 
+code span.vs { color: #9f6807; } 
+code span.wa { color: #008000; font-weight: bold; } 
+code.diff {color: #898887}
+code.diff span.va {color: #006e28}
+code.diff span.st {color: #bf0303}
+</style>
+  <style type="text/css">
+body {
+margin: 5em;
+font-family: serif;
+
+hyphens: auto;
+line-height: 1.35;
+text-align: justify;
+}
+@media screen and (max-width: 30em) {
+body {
+margin: 1.5em;
+}
+}
+div.wrapper {
+max-width: 60em;
+margin: auto;
+}
+ul {
+list-style-type: none;
+padding-left: 2em;
+margin-top: -0.2em;
+margin-bottom: -0.2em;
+}
+a {
+text-decoration: none;
+color: #4183C4;
+}
+a.hidden_link {
+text-decoration: none;
+color: inherit;
+}
+li {
+margin-top: 0.6em;
+margin-bottom: 0.6em;
+}
+h1, h2, h3, h4 {
+position: relative;
+line-height: 1;
+}
+a.self-link {
+position: absolute;
+top: 0;
+left: calc(-1 * (3.5rem - 26px));
+width: calc(3.5rem - 26px);
+height: 2em;
+text-align: center;
+border: none;
+transition: opacity .2s;
+opacity: .5;
+font-family: sans-serif;
+font-weight: normal;
+font-size: 83%;
+}
+a.self-link:hover { opacity: 1; }
+a.self-link::before { content: "§"; }
+ul > li:before {
+content: "\2014";
+position: absolute;
+margin-left: -1.5em;
+}
+:target { background-color: #C9FBC9; }
+:target .codeblock { background-color: #C9FBC9; }
+:target ul { background-color: #C9FBC9; }
+.abbr_ref { float: right; }
+.folded_abbr_ref { float: right; }
+:target .folded_abbr_ref { display: none; }
+:target .unfolded_abbr_ref { float: right; display: inherit; }
+.unfolded_abbr_ref { display: none; }
+.secnum { display: inline-block; min-width: 35pt; }
+.header-section-number { display: inline-block; min-width: 35pt; }
+.annexnum { display: block; }
+div.sourceLinkParent {
+float: right;
+}
+a.sourceLink {
+position: absolute;
+opacity: 0;
+margin-left: 10pt;
+}
+a.sourceLink:hover {
+opacity: 1;
+}
+a.itemDeclLink {
+position: absolute;
+font-size: 75%;
+text-align: right;
+width: 5em;
+opacity: 0;
+}
+a.itemDeclLink:hover { opacity: 1; }
+span.marginalizedparent {
+position: relative;
+left: -5em;
+}
+li span.marginalizedparent { left: -7em; }
+li ul > li span.marginalizedparent { left: -9em; }
+li ul > li ul > li span.marginalizedparent { left: -11em; }
+li ul > li ul > li ul > li span.marginalizedparent { left: -13em; }
+div.footnoteNumberParent {
+position: relative;
+left: -4.7em;
+}
+a.marginalized {
+position: absolute;
+font-size: 75%;
+text-align: right;
+width: 5em;
+}
+a.enumerated_item_num {
+position: relative;
+left: -3.5em;
+display: inline-block;
+margin-right: -3em;
+text-align: right;
+width: 3em;
+}
+div.para { margin-bottom: 0.6em; margin-top: 0.6em; text-align: justify; }
+div.section { text-align: justify; }
+div.sentence { display: inline; }
+span.indexparent {
+display: inline;
+position: relative;
+float: right;
+right: -1em;
+}
+a.index {
+position: absolute;
+display: none;
+}
+a.index:before { content: "⟵"; }
+
+a.index:target {
+display: inline;
+}
+.indexitems {
+margin-left: 2em;
+text-indent: -2em;
+}
+div.itemdescr {
+margin-left: 3em;
+}
+.bnf {
+font-family: serif;
+margin-left: 40pt;
+margin-top: 0.5em;
+margin-bottom: 0.5em;
+}
+.ncbnf {
+font-family: serif;
+margin-top: 0.5em;
+margin-bottom: 0.5em;
+margin-left: 40pt;
+}
+.ncsimplebnf {
+font-family: serif;
+font-style: italic;
+margin-top: 0.5em;
+margin-bottom: 0.5em;
+margin-left: 40pt;
+background: inherit; 
+}
+span.textnormal {
+font-style: normal;
+font-family: serif;
+white-space: normal;
+display: inline-block;
+}
+span.rlap {
+display: inline-block;
+width: 0px;
+}
+span.descr { font-style: normal; font-family: serif; }
+span.grammarterm { font-style: italic; }
+span.term { font-style: italic; }
+span.terminal { font-family: monospace; font-style: normal; }
+span.nonterminal { font-style: italic; }
+span.tcode { font-family: monospace; font-style: normal; }
+span.textbf { font-weight: bold; }
+span.textsc { font-variant: small-caps; }
+a.nontermdef { font-style: italic; font-family: serif; }
+span.emph { font-style: italic; }
+span.techterm { font-style: italic; }
+span.mathit { font-style: italic; }
+span.mathsf { font-family: sans-serif; }
+span.mathrm { font-family: serif; font-style: normal; }
+span.textrm { font-family: serif; }
+span.textsl { font-style: italic; }
+span.mathtt { font-family: monospace; font-style: normal; }
+span.mbox { font-family: serif; font-style: normal; }
+span.ungap { display: inline-block; width: 2pt; }
+span.textit { font-style: italic; }
+span.texttt { font-family: monospace; }
+span.tcode_in_codeblock { font-family: monospace; font-style: normal; }
+span.phantom { color: white; }
+
+span.math { font-style: normal; }
+span.mathblock {
+display: block;
+margin-left: auto;
+margin-right: auto;
+margin-top: 1.2em;
+margin-bottom: 1.2em;
+text-align: center;
+}
+span.mathalpha {
+font-style: italic;
+}
+span.synopsis {
+font-weight: bold;
+margin-top: 0.5em;
+display: block;
+}
+span.definition {
+font-weight: bold;
+display: block;
+}
+.codeblock {
+margin-left: 1.2em;
+line-height: 127%;
+}
+.outputblock {
+margin-left: 1.2em;
+line-height: 127%;
+}
+div.itemdecl {
+margin-top: 2ex;
+}
+code.itemdeclcode {
+white-space: pre;
+display: block;
+}
+span.textsuperscript {
+vertical-align: super;
+font-size: smaller;
+line-height: 0;
+}
+.footnotenum { vertical-align: super; font-size: smaller; line-height: 0; }
+.footnote {
+font-size: small;
+margin-left: 2em;
+margin-right: 2em;
+margin-top: 0.6em;
+margin-bottom: 0.6em;
+}
+div.minipage {
+display: inline-block;
+margin-right: 3em;
+}
+div.numberedTable {
+text-align: center;
+margin: 2em;
+}
+div.figure {
+text-align: center;
+margin: 2em;
+}
+table {
+border: 1px solid black;
+border-collapse: collapse;
+margin-left: auto;
+margin-right: auto;
+margin-top: 0.8em;
+text-align: left;
+hyphens: none; 
+}
+td, th {
+padding-left: 1em;
+padding-right: 1em;
+vertical-align: top;
+}
+td.empty {
+padding: 0px;
+padding-left: 1px;
+}
+td.left {
+text-align: left;
+}
+td.right {
+text-align: right;
+}
+td.center {
+text-align: center;
+}
+td.justify {
+text-align: justify;
+}
+td.border {
+border-left: 1px solid black;
+}
+tr.rowsep, td.cline {
+border-top: 1px solid black;
+}
+tr.even, tr.odd {
+border-bottom: 1px solid black;
+}
+tr.capsep {
+border-top: 3px solid black;
+border-top-style: double;
+}
+tr.header {
+border-bottom: 3px solid black;
+border-bottom-style: double;
+}
+th {
+border-bottom: 1px solid black;
+}
+span.centry {
+font-weight: bold;
+}
+div.table {
+display: block;
+margin-left: auto;
+margin-right: auto;
+text-align: center;
+width: 90%;
+}
+span.indented {
+display: block;
+margin-left: 2em;
+margin-bottom: 1em;
+margin-top: 1em;
+}
+ol.enumeratea { list-style-type: none; background: inherit; }
+ol.enumerate { list-style-type: none; background: inherit; }
+
+code.sourceCode > span { display: inline; }
+</style>
+  <link href="data:image/vnd.microsoft.icon;base64,AAABAAIAEBAAAAEAIABoBAAAJgAAACAgAAABACAAqBAAAI4EAAAoAAAAEAAAACAAAAABACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA////AIJEAACCRAAAgkQAAIJEAACCRAAAgkQAVoJEAN6CRADegkQAWIJEAACCRAAAgkQAAIJEAACCRAAA////AP///wCCRAAAgkQAAIJEAACCRAAsgkQAvoJEAP+CRAD/gkQA/4JEAP+CRADAgkQALoJEAACCRAAAgkQAAP///wD///8AgkQAAIJEABSCRACSgkQA/IJEAP99PQD/dzMA/3czAP99PQD/gkQA/4JEAPyCRACUgkQAFIJEAAD///8A////AHw+AFiBQwDqgkQA/4BBAP9/PxP/uZd6/9rJtf/bybX/upd7/39AFP+AQQD/gkQA/4FDAOqAQgBc////AP///wDKklv4jlEa/3o7AP+PWC//8+3o///////////////////////z7un/kFox/35AAP+GRwD/mVYA+v///wD///8A0Zpk+NmibP+0d0T/8evj///////+/fv/1sKz/9bCs//9/fr//////+/m2/+NRwL/nloA/5xYAPj///8A////ANKaZPjRmGH/5cKh////////////k149/3UwAP91MQD/lmQ//86rhv+USg3/m1YA/5hSAP+bVgD4////AP///wDSmmT4zpJY/+/bx///////8+TV/8mLT/+TVx//gkIA/5lVAP+VTAD/x6B//7aEVv/JpH7/s39J+P///wD///8A0ppk+M6SWP/u2sf///////Pj1f/Nj1T/2KFs/8mOUv+eWhD/lEsA/8aee/+0glT/x6F7/7J8Rvj///8A////ANKaZPjRmGH/48Cf///////+/v7/2qt//82PVP/OkFX/37KJ/86siv+USg7/mVQA/5hRAP+bVgD4////AP///wDSmmT40ppk/9CVXP/69O////////7+/v/x4M//8d/P//7+/f//////9u7n/6tnJf+XUgD/nFgA+P///wD///8A0ppk+NKaZP/RmWL/1qNy//r07///////////////////////+vXw/9akdP/Wnmn/y5FY/6JfFvj///8A////ANKaZFTSmmTo0ppk/9GYYv/Ql1//5cWm//Hg0P/x4ND/5cWm/9GXYP/RmGH/0ppk/9KaZOjVnmpY////AP///wDSmmQA0ppkEtKaZI7SmmT60ppk/9CWX//OkVb/zpFW/9CWX//SmmT/0ppk/NKaZJDSmmQS0ppkAP///wD///8A0ppkANKaZADSmmQA0ppkKtKaZLrSmmT/0ppk/9KaZP/SmmT/0ppkvNKaZCrSmmQA0ppkANKaZAD///8A////ANKaZADSmmQA0ppkANKaZADSmmQA0ppkUtKaZNzSmmTc0ppkVNKaZADSmmQA0ppkANKaZADSmmQA////AP5/AAD4HwAA4AcAAMADAACAAQAAgAEAAIABAACAAQAAgAEAAIABAACAAQAAgAEAAMADAADgBwAA+B8AAP5/AAAoAAAAIAAAAEAAAAABACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA////AP///wCCRAAAgkQAAIJEAACCRAAAgkQAAIJEAACCRAAAgkQAAIJEAACCRAAAgkQAAIJEAAyCRACMgkQA6oJEAOqCRACQgkQAEIJEAACCRAAAgkQAAIJEAACCRAAAgkQAAIJEAACCRAAAgkQAAIJEAACCRAAA////AP///wD///8A////AIJEAACCRAAAgkQAAIJEAACCRAAAgkQAAIJEAACCRAAAgkQAAIJEAACCRABigkQA5oJEAP+CRAD/gkQA/4JEAP+CRADqgkQAZoJEAACCRAAAgkQAAIJEAACCRAAAgkQAAIJEAACCRAAAgkQAAIJEAAD///8A////AP///wD///8AgkQAAIJEAACCRAAAgkQAAIJEAACCRAAAgkQAAIJEAACCRAA4gkQAwoJEAP+CRAD/gkQA/4JEAP+CRAD/gkQA/4JEAP+CRAD/gkQAxIJEADyCRAAAgkQAAIJEAACCRAAAgkQAAIJEAACCRAAAgkQAAP///wD///8A////AP///wCCRAAAgkQAAIJEAACCRAAAgkQAAIJEAACCRAAWgkQAmIJEAP+CRAD/gkQA/4JEAP+CRAD/gkQA/4JEAP+CRAD/gkQA/4JEAP+CRAD/gkQA/4JEAJyCRAAYgkQAAIJEAACCRAAAgkQAAIJEAACCRAAA////AP///wD///8A////AIJEAACCRAAAgkQAAIJEAACCRAAAgkQAdIJEAPCCRAD/gkQA/4JEAP+CRAD/gkQA/4JEAP+CRAD/gkQA/4JEAP+CRAD/gkQA/4JEAP+CRAD/gkQA/4JEAPSCRAB4gkQAAIJEAACCRAAAgkQAAIJEAAD///8A////AP///wD///8AgkQAAIJEAACCRAAAgkQASoJEANKCRAD/gkQA/4JEAP+CRAD/g0YA/39AAP9zLgD/bSQA/2shAP9rIQD/bSQA/3MuAP9/PwD/g0YA/4JEAP+CRAD/gkQA/4JEAP+CRADUgkQAToJEAACCRAAAgkQAAP///wD///8A////AP///wB+PwAAgkUAIoJEAKiCRAD/gkQA/4JEAP+CRAD/hEcA/4BBAP9sIwD/dTAA/5RfKv+viF7/vp56/76ee/+wiF7/lWAr/3YxAP9sIwD/f0AA/4RHAP+CRAD/gkQA/4JEAP+CRAD/gkQArIJEACaBQwAA////AP///wD///8A////AIBCAEBzNAD6f0EA/4NFAP+CRAD/gkQA/4VIAP92MwD/bSUA/6N1Tv/ezsL/////////////////////////////////38/D/6V3Uv9uJgD/dTEA/4VJAP+CRAD/gkQA/4JEAP+BQwD/fUAA/4FDAEj///8A////AP///wD///8AzJRd5qBlKf91NgD/dDUA/4JEAP+FSQD/cy4A/3YyAP/PuKP//////////////////////////////////////////////////////9K7qP94NQD/ciwA/4VJAP+CRAD/fkEA/35BAP+LSwD/mlYA6v///wD///8A////AP///wDdpnL/4qx3/8KJUv+PUhf/cTMA/3AsAP90LgD/4dK+/////////////////////////////////////////////////////////////////+TYxf91MAD/dTIA/31CAP+GRwD/llQA/6FcAP+gWwD8////AP///wD///8A////ANGZY/LSm2X/4ap3/92mcP+wdT3/byQA/8mwj////////////////////////////////////////////////////////////////////////////+LYxv9zLgP/jUoA/59bAP+hXAD/nFgA/5xYAPL///8A////AP///wD///8A0ppk8tKaZP/RmWL/1p9q/9ubXv/XqXj////////////////////////////7+fD/vZyG/6BxS/+gcUr/vJuE//r37f//////////////////////3MOr/5dQBf+dVQD/nVkA/5xYAP+cWAD/nFgA8v///wD///8A////AP///wDSmmTy0ppk/9KaZP/SmWP/yohJ//jo2P//////////////////////4NTG/4JDFf9lGAD/bSQA/20kAP9kGAD/fz8S/+Xb0f//////5NG9/6txN/+LOgD/m1QA/51aAP+cWAD/m1cA/5xYAP+cWADy////AP///wD///8A////ANKaZPLSmmT/0ppk/8+TWf/Unmv//v37//////////////////////+TWRr/VwsA/35AAP+ERgD/g0UA/4JGAP9lHgD/kFga/8KXX/+TRwD/jT4A/49CAP+VTQD/n10A/5xYAP+OQQD/lk4A/55cAPL///8A////AP///wD///8A0ppk8tKaZP/SmmT/y4tO/92yiP//////////////////////8NnE/8eCQP+rcTT/ez0A/3IyAP98PgD/gEMA/5FSAP+USwD/jj8A/5lUAP+JNwD/yqV2/694Mf+HNQD/jkAA/82rf/+laBj/jT4A8v///wD///8A////AP///wDSmmTy0ppk/9KaZP/LiUr/4byY///////////////////////gupX/0I5P/+Wuev/Lklz/l1sj/308AP+QSwD/ol0A/59aAP+aVQD/k0oA/8yoh///////+fXv/6pwO//Lp3v///////Pr4f+oay7y////AP///wD///8A////ANKaZPLSmmT/0ppk/8uJSv/hvJj//////////////////////+G7l//Jhkb/0ppk/96nc//fqXX/x4xO/6dkFP+QSQD/llEA/5xXAP+USgD/yaOA///////38uv/qG05/8ijdv//////8efb/6ZpLPL///8A////AP///wD///8A0ppk8tKaZP/SmmT/zIxO/9yxh///////////////////////7dbA/8iEQf/Sm2X/0Zlj/9ScZv/eqHf/2KJv/7yAQf+XTgD/iToA/5lSAP+JNgD/yKFv/611LP+HNQD/jT8A/8qmeP+kZRT/jT4A8v///wD///8A////AP///wDSmmTy0ppk/9KaZP/Pk1n/1J5q//78+//////////////////+/fv/1aFv/8iEQv/Tm2b/0ppl/9GZY//Wn2z/1pZc/9eldf/Bl2b/kUcA/4w9AP+OQAD/lUwA/59eAP+cWQD/jT8A/5ZOAP+eXADy////AP///wD///8A////ANKaZPLSmmT/0ppk/9KZY//KiEn/8d/P///////////////////////47+f/05tm/8iCP//KiEj/yohJ/8eCP//RmGH//vfy///////n1sP/rXQ7/4k4AP+TTAD/nVoA/5xYAP+cVwD/nFgA/5xYAPL///8A////AP///wD///8A0ppk8tKaZP/SmmT/0ptl/8uLTf/aq37////////////////////////////+/fz/6c2y/961jv/etY7/6Myx//78+v//////////////////////3MWv/5xXD/+ORAD/mFQA/51ZAP+cWAD/nFgA8v///wD///8A////AP///wDSmmTy0ppk/9KaZP/SmmT/0ppk/8mFRP/s1b//////////////////////////////////////////////////////////////////////////////+PD/0JFU/7NzMv+WUQD/kUsA/5tXAP+dWQDy////AP///wD///8A////ANKaZP/SmmT/0ppk/9KaZP/Sm2X/z5NZ/8yMT//z5NX/////////////////////////////////////////////////////////////////9Ofa/8yNUP/UmGH/36p5/8yTWv+qaSD/kksA/5ROAPz///8A////AP///wD///8A0ppk5NKaZP/SmmT/0ppk/9KaZP/TnGf/zY9T/82OUv/t1sD//////////////////////////////////////////////////////+7Yw//OkFX/zI5R/9OcZ//SmmP/26V0/9ymdf/BhUf/ol8R6P///wD///8A////AP///wDSmmQ80ppk9tKaZP/SmmT/0ppk/9KaZP/TnGj/zpFW/8qJSv/dson/8uHS//////////////////////////////////Lj0//etIv/y4lL/86QVf/TnGj/0ppk/9KaZP/RmWP/05xn/9ymdfjUnWdC////AP///wD///8A////ANKaZADSmmQc0ppkotKaZP/SmmT/0ppk/9KaZP/Tm2b/0Zli/8qJSf/NjlH/16Z3/+G8mP/myKr/5siq/+G8mP/Xp3f/zY5S/8qISf/RmGH/05tm/9KaZP/SmmT/0ppk/9KaZP/SmmSm0pljINWdaQD///8A////AP///wD///8A0ppkANKaZADSmmQA0ppkQtKaZMrSmmT/0ppk/9KaZP/SmmT/0ptl/9GYYf/Nj1P/y4lL/8qISP/KiEj/y4lK/82PU//RmGH/0ptl/9KaZP/SmmT/0ppk/9KaZP/SmmTO0ppkRtKaZADSmmQA0ppkAP///wD///8A////AP///wDSmmQA0ppkANKaZADSmmQA0ppkANKaZGzSmmTu0ppk/9KaZP/SmmT/0ppk/9KaZP/SmmT/0ppk/9KaZP/SmmT/0ppk/9KaZP/SmmT/0ppk/9KaZP/SmmTw0ppkcNKaZADSmmQA0ppkANKaZADSmmQA////AP///wD///8A////ANKaZADSmmQA0ppkANKaZADSmmQA0ppkANKaZBLSmmSQ0ppk/9KaZP/SmmT/0ppk/9KaZP/SmmT/0ppk/9KaZP/SmmT/0ppk/9KaZP/SmmT/0ppklNKaZBTSmmQA0ppkANKaZADSmmQA0ppkANKaZAD///8A////AP///wD///8A0ppkANKaZADSmmQA0ppkANKaZADSmmQA0ppkANKaZADSmmQy0ppkutKaZP/SmmT/0ppk/9KaZP/SmmT/0ppk/9KaZP/SmmT/0ppkvtKaZDbSmmQA0ppkANKaZADSmmQA0ppkANKaZADSmmQA0ppkAP///wD///8A////AP///wDSmmQA0ppkANKaZADSmmQA0ppkANKaZADSmmQA0ppkANKaZADSmmQA0ppkXNKaZODSmmT/0ppk/9KaZP/SmmT/0ppk5NKaZGDSmmQA0ppkANKaZADSmmQA0ppkANKaZADSmmQA0ppkANKaZADSmmQA////AP///wD///8A////ANKaZADSmmQA0ppkANKaZADSmmQA0ppkANKaZADSmmQA0ppkANKaZADSmmQA0ppkBtKaZIbSmmTo0ppk6tKaZIrSmmQK0ppkANKaZADSmmQA0ppkANKaZADSmmQA0ppkANKaZADSmmQA0ppkANKaZAD///8A////AP/8P///+B///+AH//+AAf//AAD//AAAP/AAAA/gAAAHwAAAA8AAAAPAAAADwAAAA8AAAAPAAAADwAAAA8AAAAPAAAADwAAAA8AAAAPAAAADwAAAA8AAAAPAAAADwAAAA+AAAAfwAAAP/AAAP/8AAP//gAH//+AH///4H////D//" rel="icon" />
+  
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<div class="wrapper">
+<header id="title-block-header">
+<h1 class="title" style="text-align:center">A principled approach to
+safety profiles</h1>
+<table style="border:none;float:right">
+  <tr>
+    <td>Document #:</td>
+    <td>P3649R0</td>
+  </tr>
+  <tr>
+    <td>Date:</td>
+    <td>2025-05-19</td>
+  </tr>
+  <tr>
+    <td style="vertical-align:top">Project:</td>
+    <td>Programming Language C++</td>
+  </tr>
+  <tr>
+    <td style="vertical-align:top">Audience:</td>
+    <td>
+      SG23<br>
+    </td>
+  </tr>
+  <tr>
+    <td style="vertical-align:top">Reply-to:</td>
+    <td>
+      Jonathan Müller (think-cell)<br>&lt;<a href="mailto:foonathan@jonathanmueller.dev" class="email">foonathan@jonathanmueller.dev</a>&gt;<br>
+    </td>
+  </tr>
+</table>
+</header>
+<div style="clear:both">
+<div id="TOC" role="doc-toc">
+<h1 id="toctitle">Contents</h1>
+<ul>
+<li><a href="#abstract" id="toc-abstract"><span class="toc-section-number">1</span> Abstract</a></li>
+<li><a href="#background" id="toc-background"><span class="toc-section-number">2</span> Background</a>
+<ul>
+<li><a href="#safety" id="toc-safety"><span class="toc-section-number">2.1</span> Safety</a></li>
+<li><a href="#profiles" id="toc-profiles"><span class="toc-section-number">2.2</span> Profiles</a></li>
+</ul></li>
+<li><a href="#proposed-design" id="toc-proposed-design"><span class="toc-section-number">3</span> Proposed design</a>
+<ul>
+<li><a href="#consequence-no-false-negatives" id="toc-consequence-no-false-negatives"><span class="toc-section-number">3.1</span> Consequence: No false
+negatives</a></li>
+<li><a href="#example-initialization-safety" id="toc-example-initialization-safety"><span class="toc-section-number">3.2</span> Example: Initialization
+safety</a></li>
+</ul></li>
+<li><a href="#concrete-proposal" id="toc-concrete-proposal"><span class="toc-section-number">4</span> Concrete proposal</a></li>
+<li><a href="#bibliography" id="toc-bibliography"><span class="toc-section-number">5</span> References</a></li>
+</ul>
+</div>
+<h1 data-number="1" id="abstract"><span class="header-section-number">1</span> Abstract<a href="#abstract" class="self-link"></a></h1>
+<p>We should focus on standardizing profiles that give hard guarantees
+and eliminate entire classes of undefined behavior. We should not use
+profiles to enforce stylistic rules or add heuristic based checks that
+make it less likely to encounter undefined behavior. This also requires
+adding a way to manually mark user-defined functions as violating a
+profile.</p>
+<h1 data-number="2" id="background"><span class="header-section-number">2</span> Background<a href="#background" class="self-link"></a></h1>
+<h2 data-number="2.1" id="safety"><span class="header-section-number">2.1</span> Safety<a href="#safety" class="self-link"></a></h2>
+<p>The term safety in formal methods means a guarantee that a certain
+invariant holds throughout the lifetime of the program <span class="citation" data-cites="Parent2023">[<a href="#ref-Parent2023" role="doc-biblioref">Parent2023</a>]</span>. For example, a programming
+language is memory safe if it guarantees that it is not possible to
+access invalid memory. The corresponding invariant is “every pointer
+always points to a valid address”. Safety is useful because it
+eliminates a whole class of bugs by design.</p>
+<p>Note that a safety invariant does not necessarily relate to security
+vulnerabilities, although it often does. For example, being free from
+deadlocks is a safety invariant, yet a deadlock is unlikely to be a
+security vulnerability.</p>
+<p>Safety can be achieved by a combination of static analysis (prevent
+programs that would violate the invariant from compiling) and runtime
+checks (check and abort if the invariant is violated). It is not
+possible to achieve 100% safety in system programming languages like C++
+or Rust: There are constructs that are safe, yet a static analysis
+system can’t prove it, so has to conservatively reject it, and there are
+situations where the overhead of runtime checks is not acceptable.</p>
+<p>Therefore, Rust is actually two programming languages, “Safe Rust”
+and “Unsafe Rust”. Safe Rust is a (big) subset of Unsafe Rust, where
+certain safety invariants are guaranteed. For example, it is impossible
+to write a Safe Rust program where a reference does not point to a valid
+object. Unsafe Rust adds a couple more features, such as pointer
+dereference or <code class="sourceCode default">union</code> reads,
+which can violate these invariants. It is the programmers responsibility
+to ensure that code written in Unsafe Rust does not violate these
+invariants. Therefore, the transition from Safe Rust to Unsafe Rust
+requires a big <code class="sourceCode default">unsafe</code> marker,
+customary accompanied by a comment explaining why the code does not
+violate the invariants, and exhaustive testing.</p>
+<p>This approach has been proven effective for writing security critical
+code. The vast majority of Rust code is written in Safe Rust with only
+small islands of Unsafe Rust in low-level components. Assuming no bugs
+in the Unsafe Rust code, Safe Rust eliminates a whole class of bugs by
+design.</p>
+<h2 data-number="2.2" id="profiles"><span class="header-section-number">2.2</span> Profiles<a href="#profiles" class="self-link"></a></h2>
+<p><span class="citation" data-cites="P3589R1">[<a href="#ref-P3589R1" role="doc-biblioref">P3589R1</a>]</span> proposes a framework for
+profiles, a standardized way to enforce certain (compile-time or
+runtime) checks in C++ code. This can be used to enforce certain
+clang-tidy checks, MISRA rules, or enable standard library hardening
+<span class="citation" data-cites="P3471R4">[<a href="#ref-P3471R4" role="doc-biblioref">P3471R4</a>]</span> in a portable way. It can also
+be used to enforce safety invariants, by banning or checking all
+constructs that would violate them.</p>
+<p><span class="citation" data-cites="P3081R2">[<a href="#ref-P3081R2" role="doc-biblioref">P3081R2</a>]</span> uses a similar framework to
+propose a standardized set of profiles. However, those profiles are a
+mix of heuristics to make it more likely that safety invariants hold
+(e.g. banning <code class="sourceCode default">reinterpret_cast</code>
+to avoid type confusion) and stylistic rules (e.g. banning
+<code class="sourceCode default">static_cast</code> for narrowing
+conversions). Crucially, the profiles there do not provide a guarantee,
+a concrete invariant that is being uphold when a given profile is
+enabled. There is also concern about future evolution of profiles, as
+there were ideas to extend them with more checks over time. This would
+make it a breaking change to upgrade to future C++ versions that enforce
+a profile more strictly.</p>
+<h1 data-number="3" id="proposed-design"><span class="header-section-number">3</span> Proposed design<a href="#proposed-design" class="self-link"></a></h1>
+<p>Building on the framework from <span class="citation" data-cites="P3589R1">[<a href="#ref-P3589R1" role="doc-biblioref">P3589R1</a>]</span>, I propose that we should
+initially focus on standardizing safety profiles only. That is, the
+initial set of standardized profiles should provide a guarantee that
+some safety invariant holds in their dominion. They should not be used
+to enforce stylistic rules, modernize old code, or introduce dialects.
+This goes back to Bjarne’s framework for profiles development <span class="citation" data-cites="P3274R0">[<a href="#ref-P3274R0" role="doc-biblioref">P3274R0</a>]</span>, which seem to have gotten lost
+in <span class="citation" data-cites="P3081R2">[<a href="#ref-P3081R2" role="doc-biblioref">P3081R2</a>]</span>.</p>
+<p>Concretely, every standardized profile
+<code class="sourceCode default">P</code> should have an associated
+invariant. Enabling <code class="sourceCode default">P</code> guarantees
+that this invariant holds for the entire dominion of profile
+<code class="sourceCode default">P</code>. This is done in a combination
+of static analysis rejections (e.g. disallowing pointer arithmetic)
+and/or runtime checks (e.g. checking array access). The only way to
+violate the invariant associated with
+<code class="sourceCode default">P</code> is in code outside the
+dominion of <code class="sourceCode default">P</code>, e.g.:</p>
+<ul>
+<li>Code explicitly suppressing the profile within the translation unit
+that would normally be in the dominion of
+<code class="sourceCode default">P</code> using the
+<code class="sourceCode default">[[profiles::suppress(P)]]</code>
+attribute.</li>
+<li>Code written in dependencies that have not (yet) enabled
+<code class="sourceCode default">P</code> (e.g. a third-party or C
+library).</li>
+<li>Code injected by users that have not enabled
+<code class="sourceCode default">P</code> (e.g. a callback passed to the
+dominion of <code class="sourceCode default">P</code>).</li>
+</ul>
+<p>That way, we have achieved an “island of safety” in our C++ code,
+which can be over time expanded to a “continent of safety” by enabling
+profiles in more and more code. Furthermore, when using
+<code class="sourceCode default">[[profiles::require(P)]]</code> on all
+import statements, which ensures that code in dependencies also enable
+<code class="sourceCode default">P</code>, we achieve the Rust model,
+where we have a safety guarantee in all but a few, explicitly marked
+with <code class="sourceCode default">[[profiles::suppress(P)]]</code>,
+sections of unsafe code. As Rust has shown, this approach works.</p>
+<p>This principled approach to profile selection, both avoids endless
+debates about stylistic issues, as there is now a clear technical reason
+to why a particular construct is banned by a profile (it would violate
+the invariant in a way that cannot be checked), and further ensures that
+profiles are stable and backwards compatible (if we do our jobs right,
+we won’t later discover more rules that would apply to existing code).
+This side steps a lot of the discussion around the profiles in <span class="citation" data-cites="P3081R2">[<a href="#ref-P3081R2" role="doc-biblioref">P3081R2</a>]</span>.</p>
+<h2 data-number="3.1" id="consequence-no-false-negatives"><span class="header-section-number">3.1</span> Consequence: No false
+negatives<a href="#consequence-no-false-negatives" class="self-link"></a></h2>
+<p>To guarantee safety, the invariant needs to be enforced, not just
+mostly enforced. 100% of code that violates the invariant needs to be
+rejected or checked at runtime.</p>
+<p>Otherwise, it is not a safety invariant, but more a safety
+heuristic.</p>
+<p>This safety heuristic approach is what C++ has already been doing for
+40 years: Smart pointers are a heuristic approach to prevent
+use-after-free, constructors are a heuristic approach to prevent
+uninitialized memory, and so on.</p>
+<p>And this approach is precisely why C++ is facing regulatory pressure:
+Heuristics do not provide guarantees that can be relied upon. If
+anything, heuristics lull you into a false sense of security, as it is a
+lot less likely that you run into bugs, so you start being less
+careful.</p>
+<p>If you believe that there is serious regulatory pressure to make C++
+safe, do you think they will be satisfied if we keep doing what we have
+been doing for 40 years? We need a paradigm shift, not a continuation of
+the status quo.</p>
+<p>Furthermore, why would someone go through the trouble of enabling a
+profile, updating a lot of code to follow its rules, without actually
+getting a concrete guarantee out of it?</p>
+<h2 data-number="3.2" id="example-initialization-safety"><span class="header-section-number">3.2</span> Example: Initialization
+safety<a href="#example-initialization-safety" class="self-link"></a></h2>
+<p>One simple example of a safety profile is an initialization profile.
+The associated safety invariant is “every variable is initialized before
+it is used”.</p>
+<p>One easy way to enforce this invariant is to disallow default
+initialization of variables, unless it is a class type with a
+non-trivial default constructor, and constructs such as
+<code class="sourceCode default">reinterpret_cast</code> which would
+allow the creation of a pointer without calling any constructor.
+Furthermore, it should also prohibit calling standard library functions
+that return uninitialized memory, like
+<code class="sourceCode default">std::malloc</code>. By exhaustively
+enumerating and prohibiting all ways to create objects without
+initializing them, we can guarantee that the invariant holds.</p>
+<p>This static analysis is very simple, but has obvious false positives,
+such as:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> x; <span class="co">// error: x is not initialized</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> <span class="dv">5</span>;</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>use<span class="op">(</span>x<span class="op">)</span>;</span></code></pre></div>
+<p>The code itself is correct and does not violate the safety invariant,
+yet our static analysis would reject it. A more sophisticated static
+analysis could do flow analysis and determine that
+<code class="sourceCode default">x</code> is initialized before use.
+When standardizing this hypothetical profile, we need to decide whether
+we should require a specific static analysis scheme, and if so, which
+one, or whether we allow an implementation to do more sophisticated
+static analysis which would lead to fewer false positives.</p>
+<p>This profile also highlights a potential hole in the framework. Let’s
+say that in order to ensure the initialization safety invariant, we have
+decided to ban <code class="sourceCode default">std::malloc</code> as
+part of the enforcement. What about a third-party function that defines
+<code class="sourceCode default">my_malloc</code>? It also needs to be
+banned, yet the profile has no way of knowing that.</p>
+<p>Therefore, we need an attribute to indicate that something is an
+unsafe abstraction: It builds on top of constructs prohibited by the
+profile in such a way that it could potentially violate the invariant.
+Let’s use the attribute syntax
+<code class="sourceCode default">[[profiles::prohibit_in(P)]]</code> to
+indicate that something also needs to be banned when
+<code class="sourceCode default">P</code> is used:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="op">[[</span><span class="at">profiles</span><span class="op">::</span><span class="at">prohibit_in</span><span class="op">(</span><span class="at">initialization</span><span class="op">)]]</span> <span class="dt">void</span><span class="op">*</span> my_malloc<span class="op">(</span>std<span class="op">::</span><span class="dt">size_t</span><span class="op">)</span>;</span></code></pre></div>
+<p>Note the distinction between
+<code class="sourceCode default">[[profiles::suppress(P)]]</code> and
+<code class="sourceCode default">[[profiles::prohibit_in(P)]]</code>:
+<code class="sourceCode default">[[profiles::suppres(P)]]</code> means
+“this construct is banned by <code class="sourceCode default">P</code>,
+because we cannot prove that the invariant holds, but in this particular
+context, I know it holds”, whereas
+<code class="sourceCode default">[[profiles::prohibit_in(P)]]</code>
+means “this construct also needs to be banned by
+<code class="sourceCode default">P</code> because it could potentially
+violate the invariant”. Note that by definition, the implementation of a
+<code class="sourceCode default">[[profiles::prohibit_in(P)]]</code>
+function has to use
+<code class="sourceCode default">[[profiles::suppress(P)]]</code> at
+some point (or third-party code that is not in the dominion of
+<code class="sourceCode default">P</code>): After all, if
+<code class="sourceCode default">P</code> is enabled, the invariant
+cannot be violated! However, not every use of
+<code class="sourceCode default">[[profiles::suppress(P)]]</code> needs
+to be marked with
+<code class="sourceCode default">[[profiles::prohibit_in(P)]]</code>: If
+you do something with the suppressed construct that would not violate
+the invariant, the suppression does not need to propagate.</p>
+<p>For example, if we want to use
+<code class="sourceCode default">std::malloc</code> to allocate memory
+and initialize it, we don’t need to mark the composed construct with
+<code class="sourceCode default">[[profiles::prohibit_in(initialization)]]</code>:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span><span class="op">*</span> zeroed_malloc<span class="op">(</span>std<span class="op">::</span><span class="dt">size_t</span> size<span class="op">)</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="op">[[</span><span class="at">profiles</span><span class="op">::</span><span class="at">suppress</span><span class="op">(</span><span class="at">initialized</span><span class="op">)]]</span> <span class="kw">auto</span> ptr <span class="op">=</span> std<span class="op">::</span>malloc<span class="op">(</span>size<span class="op">)</span>;</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    std<span class="op">::</span>memset<span class="op">(</span>ptr, <span class="dv">0</span>, size<span class="op">)</span>;</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> ptr;</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>However, if we want to provide a convenient wrapper for allocating an
+object with <code class="sourceCode default">std::malloc</code> without
+initialization, we do need to mark the composed construct:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> T<span class="op">&gt;</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="op">[[</span><span class="at">profiles</span><span class="op">::</span><span class="at">prohibit_in</span><span class="op">(</span><span class="at">initialization</span><span class="op">)]]</span> T<span class="op">*</span> allocate<span class="op">()</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    <span class="op">[[</span><span class="at">profiles</span><span class="op">::</span><span class="at">suppress</span><span class="op">(</span><span class="at">initialization</span><span class="op">)]]</span> <span class="cf">return</span> <span class="kw">static_cast</span><span class="op">&lt;</span>T<span class="op">*&gt;(</span>std<span class="op">::</span>malloc<span class="op">(</span><span class="kw">sizeof</span><span class="op">(</span>T<span class="op">)))</span>;</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>(In Rust, both
+<code class="sourceCode default">[[profiles::suppress(P)]]</code> and
+<code class="sourceCode default">[[profiles::prohibit_in(P)]]</code> are
+spelled with the <code class="sourceCode default">unsafe</code>
+keyword.)</p>
+<p>Another consequence is that a construct might need to be banned for
+multiple profiles. For example,
+<code class="sourceCode default">reinterpret_cast</code> can both lead
+to accessing uninitialized objects, as well as strict aliasing
+violations. It therefore needs to be suppressed in both a hypothetical
+<code class="sourceCode default">initialization</code> profile and a
+<code class="sourceCode default">type_confusion</code> profile, and the
+framework needs to allow for that, by e.g. allowing a variadic <code class="sourceCode default">[[profiles::suppress(P, Q, ...)]]</code> or a
+blanket <code class="sourceCode default">[[profiles::suppress]]</code>
+syntax.</p>
+<h1 data-number="4" id="concrete-proposal"><span class="header-section-number">4</span> Concrete proposal<a href="#concrete-proposal" class="self-link"></a></h1>
+<p>WG21 should focus on standardizing safety profiles only (at least at
+first). Each safety profiles gives a guarantee that a certain safety
+invariant, usually a guarantee that a certain set of undefined behavior
+does not happen, holds in its dominion. This is hard guarantee, not a
+heuristic; false negatives are not acceptable.</p>
+<p>Every proposed profile should make it clear what invariant it
+enforces, and how it is enforced; similar to the approach in <span class="citation" data-cites="P3274R0">[<a href="#ref-P3274R0" role="doc-biblioref">P3274R0</a>]</span>.</p>
+<p>Furthermore, <span class="citation" data-cites="P3589R1">[<a href="#ref-P3589R1" role="doc-biblioref">P3589R1</a>]</span> should be
+extended with a
+<code class="sourceCode default">[[profiles::prohibit_in(P)]]</code>
+attribute (or syntax like it) to indicate constructs that should be
+banned when profile <code class="sourceCode default">P</code> is
+enabled, as well as a way to suppress a construct in multiple profiles
+at once.</p>
+<h1 data-number="5" id="bibliography"><span class="header-section-number">5</span> References<a href="#bibliography" class="self-link"></a></h1>
+<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
+<div id="ref-P3081R2" class="csl-entry" role="listitem">
+[P3081R2] Herb Sutter. 2025-02-03. Core safety profiles for C++26. <a href="https://wg21.link/p3081r2"><div class="csl-block">https://wg21.link/p3081r2</div></a>
+</div>
+<div id="ref-P3274R0" class="csl-entry" role="listitem">
+[P3274R0] Bjarne Stroustrup. 2024-05-10. A framework for Profiles
+development. <a href="https://wg21.link/p3274r0"><div class="csl-block">https://wg21.link/p3274r0</div></a>
+</div>
+<div id="ref-P3471R4" class="csl-entry" role="listitem">
+[P3471R4] Konstantin Varlamov, Louis Dionne. 2025-02-14. Standard
+Library Hardening. <a href="https://wg21.link/p3471r4"><div class="csl-block">https://wg21.link/p3471r4</div></a>
+</div>
+<div id="ref-P3589R1" class="csl-entry" role="listitem">
+[P3589R1] Gabriel Dos Reis. 2025-02-03. C++ Profiles: The Framework. <a href="https://wg21.link/p3589r1"><div class="csl-block">https://wg21.link/p3589r1</div></a>
+</div>
+<div id="ref-Parent2023" class="csl-entry" role="listitem">
+[Parent2023] Keynote: Safety in C++: All the Safeties! - Sean Parent -
+C++ on Sea 2023. <a href="https://www.youtube.com/watch?v=BaUv9sgLCPc"><div class="csl-block">https://www.youtube.com/watch?v=BaUv9sgLCPc</div></a>
+</div>
+</div>
+</div>
+</div>
+</body>
+</html>
