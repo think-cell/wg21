@@ -478,7 +478,7 @@ copyable. Consider the following example that deals with a legacy
 API:</p>
 <table>
 <thead>
-<tr class="header">
+<tr>
 <th><div style="text-align:center">
 <strong>Before</strong>
 </div></th>
@@ -488,7 +488,7 @@ API:</p>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td><div>
 
 <div class="sourceCode" id="cb1"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>```cpp</span>
@@ -614,8 +614,7 @@ space or runtime overhead.</p>
 standardize the behavior of boost::noncopyable. <span class="citation" data-cites="N2675">[<a href="#ref-N2675" role="doc-biblioref">N2675</a>]</span>.</p>
 <h1 data-number="6" id="wording"><span class="header-section-number">6</span> Wording<a href="#wording" class="self-link"></a></h1>
 <p>Add to header <code class="sourceCode default">&lt;utility&gt;</code>
-synopsis in <span>22.2.1
-<a href="https://wg21.link/utility.syn">[utility.syn]</a></span></p>
+synopsis in <a href="https://wg21.link/utility.syn">[utility.syn]</a></p>
 <div class="add" style="color: #006e28">
 
 <div class="sourceCode" id="cb4"><pre class="sourceCode default cpp"><code class="sourceCode default"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>// [utility.noncopyable], class noncopyable</span>
@@ -631,8 +630,7 @@ synopsis in <span>22.2.1
 <span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>using nonmovable-adl-namespace::nonmovable;</span></code></pre></div>
 
 </div>
-<p>Append a new section to <span>22.2
-<a href="https://wg21.link/utility">[utility]</a></span></p>
+<p>Append a new section to <a href="https://wg21.link/utility">[utility]</a></p>
 <div class="add" style="color: #006e28">
 
 <h2 class="unnumbered" id="x-support-classes-utility.support">22.2.x
@@ -656,8 +654,7 @@ simplify creation of classes that have move-only semantics, i.e. they
 are movable but not copyable.</p>
 <p>[<em>Note</em>: <code class="sourceCode default">noncopyable</code>
 is provided in an unspecified nested namespace to limit argument
-dependent lookup <span>6.5.4
-<a href="https://wg21.link/basic.lookup.argdep">[basic.lookup.argdep]</a></span>;
+dependent lookup <a href="https://wg21.link/basic.lookup.argdep">[basic.lookup.argdep]</a>;
 no other names should be declared in this namespace. — <em>end
 note</em>]</p>
 <p>[<em>Example</em>:</p>
@@ -691,8 +688,7 @@ note</em>]</p>
 simplify creation of classes that inhibit move and copy semantics.</p>
 <p>[<em>Note</em>: <code class="sourceCode default">nonmovable</code> is
 provided in an unspecified nested namespace to limit argument dependent
-lookup <span>6.5.4
-<a href="https://wg21.link/basic.lookup.argdep">[basic.lookup.argdep]</a></span>;
+lookup <a href="https://wg21.link/basic.lookup.argdep">[basic.lookup.argdep]</a>;
 no other names should be declared in this namespace. — <em>end
 note</em>]</p>
 <p>[<em>Example</em>:</p>

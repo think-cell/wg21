@@ -596,16 +596,14 @@ telecon</a>.</p>
 <h1 data-number="4" id="wording"><span class="header-section-number">4</span> Wording<a href="#wording" class="self-link"></a></h1>
 <p>Adapted from <span class="citation" data-cites="P3774R0">[<a href="#ref-P3774R0" role="doc-biblioref">P3774R0</a>]</span>, relative
 to <span class="citation" data-cites="N5008">[<a href="#ref-N5008" role="doc-biblioref">N5008</a>]</span>.</p>
-<p>In <span>17.3.2
-<a href="https://wg21.link/version.syn">[version.syn]</a></span>, update
+<p>In <a href="https://wg21.link/version.syn">[version.syn]</a>, update
 the feature-test macros:</p>
 <div>
 <div class="sourceCode" id="cb1"><pre class="sourceCode diff"><code class="sourceCode diff"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="st">-#define __cpp_lib_function_ref 202306L // also in &lt;functional&gt;</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="va">+#define __cpp_lib_function_ref 20XXXXL // also in &lt;functional&gt;</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="va">+#define __cpp_lib_fn 20XXXXL // also in &lt;functional&gt;</span></span></code></pre></div>
 </div>
-<p>In <span>22.2.1
-<a href="https://wg21.link/utility.syn">[utility.syn]</a></span>, delete
+<p>In <a href="https://wg21.link/utility.syn">[utility.syn]</a>, delete
 the declarations of <code class="sourceCode default">std::nontype</code>
 and <code class="sourceCode default">std::nontype_t</code>:</p>
 <div>
@@ -616,8 +614,7 @@ and <code class="sourceCode default">std::nontype_t</code>:</p>
 <span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="st">-};</span></span>
 <span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="st">-template&lt;auto V&gt; constexpr nontype_t&lt;V&gt; nontype{};</span></span></code></pre></div>
 </div>
-<p>In <span>22.10.2
-<a href="https://wg21.link/functional.syn">[functional.syn]</a></span>,
+<p>In <a href="https://wg21.link/functional.syn">[functional.syn]</a>,
 change the synopsis as follows:</p>
 <div>
 <div class="sourceCode" id="cb3"><pre class="sourceCode diff"><code class="sourceCode diff"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>namespace std {</span>
@@ -638,11 +635,9 @@ change the synopsis as follows:</p>
 <span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>  […]</span>
 <span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
 </div>
-<p>Between <span>22.10.12
-<a href="https://wg21.link/func.identity">[func.identity]</a></span> and
-<span>22.10.13
-<a href="https://wg21.link/func.not.fn">[func.not.fn]</a></span>, insert
-a new subclause:</p>
+<p>Between <a href="https://wg21.link/func.identity">[func.identity]</a>
+and <a href="https://wg21.link/func.not.fn">[func.not.fn]</a>, insert a
+new subclause:</p>
 <div class="add" style="color: #006e28">
 
 <h2 class="unnumbered" id="constant-function-wrapper-func.wrapper">Constant function wrapper
@@ -659,8 +654,7 @@ Let <code class="sourceCode default">fw</code> be an object of type
 <code class="sourceCode default">const</code>) specialization of
 <code class="sourceCode default">function_wrapper</code>, and let
 <code class="sourceCode default">cf</code> be a template parameter
-object (<span>13.2
-<a href="https://wg21.link/temp.param">[temp.param]</a></span>)
+object (<a href="https://wg21.link/temp.param">[temp.param]</a>)
 corresponding to the constant template argument of
 <code class="sourceCode default">FW</code>. Then:</p>
 <ul>
@@ -670,15 +664,13 @@ type, such that <code class="sourceCode default">FW</code> models
 <code class="sourceCode default">is_empty_v&lt;FW&gt;</code> is
 <code class="sourceCode default">true</code>;</li>
 <li><code class="sourceCode default">fw</code> is a simple call wrapper
-(<span>22.10.4
-<a href="https://wg21.link/func.require">[func.require]</a></span>) with
-no state entities and with the call pattern
+(<a href="https://wg21.link/func.require">[func.require]</a>) with no
+state entities and with the call pattern
 <code class="sourceCode default">invoke(cf, call_args...)</code>, where
 <code class="sourceCode default">call_args</code> is an argument pack
-used in a function call expression (<span>7.6.1.3
-<a href="https://wg21.link/expr.call">[expr.call]</a></span>), except
-that any parameter of the function selected by overload resolution may
-be initialized from the corresponding element of
+used in a function call expression (<a href="https://wg21.link/expr.call">[expr.call]</a>), except that any
+parameter of the function selected by overload resolution may be
+initialized from the corresponding element of
 <code class="sourceCode default">call_args</code> if that element is a
 prvalue;</li>
 <li>for any type <code class="sourceCode default">R</code> and pack of
@@ -702,8 +694,7 @@ is <code class="sourceCode default">true</code>.</p>
 </ul>
 
 </div>
-<p>In <span>22.10.17.6
-<a href="https://wg21.link/func.wrap.ref">[func.wrap.ref]</a></span>,
+<p>In <a href="https://wg21.link/func.wrap.ref">[func.wrap.ref]</a>,
 replace every occurrence of
 <code class="sourceCode default">nontype_t</code> with
 <code class="sourceCode default">function_wrapper</code>.</p>
