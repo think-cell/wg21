@@ -1,7 +1,7 @@
 ---
 title: "Reconsider R0 of P3774 (Rename std::nontype) for C++26"
-document: P3843R0
-date: 2025-09-17
+document: P3843R1
+date: 2025-10-28
 audience: LEWG
 author:
   - name: Jonathan Müller
@@ -12,6 +12,13 @@ author:
 
 Don't rename `std::nontype_t` to `std::constant_arg_t` as proposed by [@P3774R1].
 Instead, rename it to something like `std::function_wrapper` and make it callable, as originally proposed by [@P3774R0].
+
+# Revision history
+
+## R1
+
+* Update wording to allow copy elision and make it freestanding.
+* Reference prior implementation in libstdc++.
 
 # Background
 
@@ -64,6 +71,7 @@ Furthermore, `std::fn_t` with a call operator is broadly useful beyond `std::fun
   With `std::fn_t` you just specify the function as template parameter.
 * When passing a function to generic algorithms, unless the entire algorithm is inlined, we suffer an indirect call.
   If we pass a `std::fn_t` instead, the call target is known at compile time, enabling further information.
+* libstdc++ already uses a type like `std::fn_t` as a QoI optimization for the return type of `std::bind_front/back<f>()` (i.e. when binding zero arguments to a compile-time known function) [@libstdcxx].
 
 We therefore should reconsider the adoption of [@P3774R0] (not R1!).
 There was some resistance to naming it `std::fn_t` without also providing the call operator, so let's just provide both in C++26.
@@ -71,7 +79,7 @@ Let's also rename it to `std::function_wrapper` as that name had the most consen
 
 # Wording
 
-Adapted from [@P3774R0], relative to [@N5008].
+Adapted from [@P3774R0] with feedback from the discussion on [@LWG4319], relative to [@N5008].
 
 In [version.syn]{.sref}, update the feature-test macros:
 
@@ -101,10 +109,9 @@ namespace std {
   // [func.identity], identity
   struct identity;                                                  // freestanding
 
-+ // [func.wrapper], constant function wrapper
-+  template<auto f>
-+  struct function_wrapper;
-+  template<auto f> constexpr function_wrapper<f> fw;
++  // [func.wrapper], constant function wrapper
++  template<auto f> struct function_wrapper;                         // freestanding
++  template<auto f> constexpr function_wrapper<f> fw;                // freestanding
 
   // [func.not.fn], function template not_fn
   template<class F> constexpr unspecified not_fn(F&& f);            // freestanding
@@ -135,7 +142,6 @@ Then:
 * `FW` is a trivially copyable type, such that `FW` models `semiregular` and `is_empty_v<FW>` is `true`;
 * `fw` is a simple call wrapper ([func.require]{.sref}) with no state entities and with the call pattern `invoke(cf, call_args...)`,
   where `call_args` is an argument pack used in a function call expression ([expr.call]{.sref}),
-  except that any parameter of the function selected by overload resolution may be initialized from the corresponding element of `call_args` if that element is a prvalue;
 * for any type `R` and pack of types `Args`, both `fw` and `std::move(fw)` are convertible to:
   * `R(*)(Args...)` if `is_invocable_r_v<R, decltype(cf), Args...>` is `true`;
   * `R(*)(Args...) noexcept` if `is_nothrow_invocable_r_v<R, decltype(cf), Args...>` is `true`.
@@ -151,5 +157,20 @@ Then:
 
 :::
 
+*Note that the above wording for simple call wrappers does not include the line "except that any parameter of the function selected by overload resolution may be initialized from the corresponding element of call_args if that element is a prvalue" present in [@P3774R0].
+This enables copy elision in the calls to `fw` (by implementing it as a surrogate function call).*
+
 In [func.wrap.ref]{.sref}, replace every occurrence of `nontype_t` with `function_wrapper`.
+
+# Acknowledgments
+
+Thanks to Tomasz Kamiński for providing feedback and suggesting the wording change to allow copy elision.
+
+---
+references:
+  - id: libstdcxx
+    citation-label: libstdc++
+    title: "_Bind_fn_t in libstdc++"
+    URL: https://github.com/gcc-mirror/gcc/blob/27861393a92d00f8ab7b0f139075ad43dd418282/libstdc%2B%2B-v3/include/std/functional#L926-L936
+---
 

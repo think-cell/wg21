@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="generator" content="mpark/wg21" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <meta name="dcterms.date" content="2025-09-17" />
+  <meta name="dcterms.date" content="2025-10-28" />
   <title>Reconsider R0 of P3774 (Rename std::nontype) for C++26</title>
   <style>
 code{white-space: pre-wrap;}
@@ -425,11 +425,11 @@ code.sourceCode > span { display: inline; }
 <table style="border:none;float:right">
   <tr>
     <td>Document #:</td>
-    <td>P3843R0</td>
+    <td>P3843R1</td>
   </tr>
   <tr>
     <td>Date:</td>
-    <td>2025-09-17</td>
+    <td>2025-10-28</td>
   </tr>
   <tr>
     <td style="vertical-align:top">Project:</td>
@@ -454,10 +454,15 @@ code.sourceCode > span { display: inline; }
 <h1 id="toctitle">Contents</h1>
 <ul>
 <li><a href="#abstract" id="toc-abstract"><span class="toc-section-number">1</span> Abstract</a></li>
-<li><a href="#background" id="toc-background"><span class="toc-section-number">2</span> Background</a></li>
-<li><a href="#proposal" id="toc-proposal"><span class="toc-section-number">3</span> Proposal</a></li>
-<li><a href="#wording" id="toc-wording"><span class="toc-section-number">4</span> Wording</a></li>
-<li><a href="#bibliography" id="toc-bibliography"><span class="toc-section-number">5</span> References</a></li>
+<li><a href="#revision-history" id="toc-revision-history"><span class="toc-section-number">2</span> Revision history</a>
+<ul>
+<li><a href="#r1" id="toc-r1"><span class="toc-section-number">2.1</span> R1</a></li>
+</ul></li>
+<li><a href="#background" id="toc-background"><span class="toc-section-number">3</span> Background</a></li>
+<li><a href="#proposal" id="toc-proposal"><span class="toc-section-number">4</span> Proposal</a></li>
+<li><a href="#wording" id="toc-wording"><span class="toc-section-number">5</span> Wording</a></li>
+<li><a href="#acknowledgments" id="toc-acknowledgments"><span class="toc-section-number">6</span> Acknowledgments</a></li>
+<li><a href="#bibliography" id="toc-bibliography"><span class="toc-section-number">7</span> References</a></li>
 </ul>
 </div>
 <h1 data-number="1" id="abstract"><span class="header-section-number">1</span> Abstract<a href="#abstract" class="self-link"></a></h1>
@@ -467,7 +472,13 @@ proposed by <span class="citation" data-cites="P3774R1">[<a href="#ref-P3774R1" 
 rename it to something like
 <code class="sourceCode default">std::function_wrapper</code> and make
 it callable, as originally proposed by <span class="citation" data-cites="P3774R0">[<a href="#ref-P3774R0" role="doc-biblioref">P3774R0</a>]</span>.</p>
-<h1 data-number="2" id="background"><span class="header-section-number">2</span> Background<a href="#background" class="self-link"></a></h1>
+<h1 data-number="2" id="revision-history"><span class="header-section-number">2</span> Revision history<a href="#revision-history" class="self-link"></a></h1>
+<h2 data-number="2.1" id="r1"><span class="header-section-number">2.1</span> R1<a href="#r1" class="self-link"></a></h2>
+<ul>
+<li>Update wording to allow copy elision and make it freestanding.</li>
+<li>Reference prior implementation in libstdc++.</li>
+</ul>
+<h1 data-number="3" id="background"><span class="header-section-number">3</span> Background<a href="#background" class="self-link"></a></h1>
 <p><span class="citation" data-cites="P0792R14">[<a href="#ref-P0792R14" role="doc-biblioref">P0792R14</a>]</span>, adopted for C++26, adds
 <code class="sourceCode default">std::function_ref</code>, a non-owning
 reference wrapper for callable objects. To make it usable with member
@@ -536,7 +547,7 @@ call operator in C++29. This approach did not have consensus, so
 following LEWG guidance <span class="citation" data-cites="P3774R1">[<a href="#ref-P3774R1" role="doc-biblioref">P3774R1</a>]</span> pivoted to
 rename it to <code class="sourceCode default">std::constant_arg_t</code>
 instead without a call operator.</p>
-<h1 data-number="3" id="proposal"><span class="header-section-number">3</span> Proposal<a href="#proposal" class="self-link"></a></h1>
+<h1 data-number="4" id="proposal"><span class="header-section-number">4</span> Proposal<a href="#proposal" class="self-link"></a></h1>
 <p>If <span class="citation" data-cites="P3774R1">[<a href="#ref-P3774R1" role="doc-biblioref">P3774R1</a>]</span> is adopted,
 we would have both
 <code class="sourceCode default">std::constant_wrapper</code> and
@@ -584,6 +595,12 @@ specify the function as template parameter.</li>
 algorithm is inlined, we suffer an indirect call. If we pass a
 <code class="sourceCode default">std::fn_t</code> instead, the call
 target is known at compile time, enabling further information.</li>
+<li>libstdc++ already uses a type like
+<code class="sourceCode default">std::fn_t</code> as a QoI optimization
+for the return type of
+<code class="sourceCode default">std::bind_front/back&lt;f&gt;()</code>
+(i.e. when binding zero arguments to a compile-time known function)
+<span class="citation" data-cites="libstdcxx">[<a href="#ref-libstdcxx" role="doc-biblioref">libstdc++</a>]</span>.</li>
 </ul>
 <p>We therefore should reconsider the adoption of <span class="citation" data-cites="P3774R0">[<a href="#ref-P3774R0" role="doc-biblioref">P3774R0</a>]</span> (not R1!). There was some
 resistance to naming it
@@ -593,9 +610,9 @@ rename it to
 <code class="sourceCode default">std::function_wrapper</code> as that
 name had the most consensus during the <a href="https://github.com/cplusplus/papers/issues/2388#issuecomment-3219100499">LEWG
 telecon</a>.</p>
-<h1 data-number="4" id="wording"><span class="header-section-number">4</span> Wording<a href="#wording" class="self-link"></a></h1>
-<p>Adapted from <span class="citation" data-cites="P3774R0">[<a href="#ref-P3774R0" role="doc-biblioref">P3774R0</a>]</span>, relative
-to <span class="citation" data-cites="N5008">[<a href="#ref-N5008" role="doc-biblioref">N5008</a>]</span>.</p>
+<h1 data-number="5" id="wording"><span class="header-section-number">5</span> Wording<a href="#wording" class="self-link"></a></h1>
+<p>Adapted from <span class="citation" data-cites="P3774R0">[<a href="#ref-P3774R0" role="doc-biblioref">P3774R0</a>]</span> with
+feedback from the discussion on <span class="citation" data-cites="LWG4319">[<a href="#ref-LWG4319" role="doc-biblioref">LWG4319</a>]</span>, relative to <span class="citation" data-cites="N5008">[<a href="#ref-N5008" role="doc-biblioref">N5008</a>]</span>.</p>
 <p>In <a href="https://wg21.link/version.syn">[version.syn]</a>, update
 the feature-test macros:</p>
 <div>
@@ -623,17 +640,16 @@ change the synopsis as follows:</p>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  // [func.identity], identity</span>
 <span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  struct identity;                                                  // freestanding</span>
 <span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="va">+ // [func.wrapper], constant function wrapper</span></span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="va">+  template&lt;auto f&gt;</span></span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="va">+  struct function_wrapper;</span></span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="va">+  template&lt;auto f&gt; constexpr function_wrapper&lt;f&gt; fw;</span></span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>  // [func.not.fn], function template not_fn</span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>  template&lt;class F&gt; constexpr unspecified not_fn(F&amp;&amp; f);            // freestanding</span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>  template&lt;auto f&gt; constexpr unspecified not_fn() noexcept;         // freestanding</span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>  […]</span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="va">+  // [func.wrapper], constant function wrapper</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="va">+  template&lt;auto f&gt; struct function_wrapper;                         // freestanding</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="va">+  template&lt;auto f&gt; constexpr function_wrapper&lt;f&gt; fw;                // freestanding</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>  // [func.not.fn], function template not_fn</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>  template&lt;class F&gt; constexpr unspecified not_fn(F&amp;&amp; f);            // freestanding</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>  template&lt;auto f&gt; constexpr unspecified not_fn() noexcept;         // freestanding</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>  […]</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
 </div>
 <p>Between <a href="https://wg21.link/func.identity">[func.identity]</a>
 and <a href="https://wg21.link/func.not.fn">[func.not.fn]</a>, insert a
@@ -668,11 +684,7 @@ type, such that <code class="sourceCode default">FW</code> models
 state entities and with the call pattern
 <code class="sourceCode default">invoke(cf, call_args...)</code>, where
 <code class="sourceCode default">call_args</code> is an argument pack
-used in a function call expression (<a href="https://wg21.link/expr.call">[expr.call]</a>), except that any
-parameter of the function selected by overload resolution may be
-initialized from the corresponding element of
-<code class="sourceCode default">call_args</code> if that element is a
-prvalue;</li>
+used in a function call expression (<a href="https://wg21.link/expr.call">[expr.call]</a>),</li>
 <li>for any type <code class="sourceCode default">R</code> and pack of
 types <code class="sourceCode default">Args</code>, both
 <code class="sourceCode default">fw</code> and
@@ -694,12 +706,28 @@ is <code class="sourceCode default">true</code>.</p>
 </ul>
 
 </div>
+<p><em>Note that the above wording for simple call wrappers does not
+include the line “except that any parameter of the function selected by
+overload resolution may be initialized from the corresponding element of
+call_args if that element is a prvalue” present in <span class="citation" data-cites="P3774R0">[<a href="#ref-P3774R0" role="doc-biblioref">P3774R0</a>]</span>. This enables copy elision in
+the calls to <code class="sourceCode default">fw</code> (by implementing
+it as a surrogate function call).</em></p>
 <p>In <a href="https://wg21.link/func.wrap.ref">[func.wrap.ref]</a>,
 replace every occurrence of
 <code class="sourceCode default">nontype_t</code> with
 <code class="sourceCode default">function_wrapper</code>.</p>
-<h1 data-number="5" id="bibliography"><span class="header-section-number">5</span> References<a href="#bibliography" class="self-link"></a></h1>
+<h1 data-number="6" id="acknowledgments"><span class="header-section-number">6</span> Acknowledgments<a href="#acknowledgments" class="self-link"></a></h1>
+<p>Thanks to Tomasz Kamiński for providing feedback and suggesting the
+wording change to allow copy elision.</p>
+<h1 data-number="7" id="bibliography"><span class="header-section-number">7</span> References<a href="#bibliography" class="self-link"></a></h1>
 <div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
+<div id="ref-libstdcxx" class="csl-entry" role="listitem">
+[libstdc++] _Bind_fn_t in libstdc++. <a href="https://github.com/gcc-mirror/gcc/blob/27861393a92d00f8ab7b0f139075ad43dd418282/libstdc%2B%2B-v3/include/std/functional#L926-L936"><div class="csl-block">https://github.com/gcc-mirror/gcc/blob/27861393a92d00f8ab7b0f139075ad43dd418282/libstdc%2B%2B-v3/include/std/functional#L926-L936</div></a>
+</div>
+<div id="ref-LWG4319" class="csl-entry" role="listitem">
+[LWG4319] Tomasz Kamiński. Supporting copy-elision in function wrappers.
+<a href="https://wg21.link/lwg4319"><div class="csl-block">https://wg21.link/lwg4319</div></a>
+</div>
 <div id="ref-N5008" class="csl-entry" role="listitem">
 [N5008] Thomas Köppe. 2025-03-15. Working Draft, Programming Languages —
 C++. <a href="https://wg21.link/n5008"><div class="csl-block">https://wg21.link/n5008</div></a>
