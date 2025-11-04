@@ -61,6 +61,9 @@ def prepare(doc):
         pf.RawBlock(highlighting('html'), 'html'))
 
 def finalize(doc):
+    if doc.format == 'beamer':
+        return
+
     def init_code_elems(elem, doc):
         if isinstance(elem, pf.Header) and doc.format == 'latex':
             elem.walk(lambda elem, doc:
@@ -126,7 +129,7 @@ def finalize(doc):
         text = text.replace('<', '\\textless{}') \
                    .replace('>', '\\textgreater{}')
 
-    if doc.format == 'latex':
+    if doc.format == 'latex' or doc.format == 'beamer':
         texts = text.split('\n\n---\n\n')
     elif doc.format == 'html':
         texts = text.split('\n---\n')

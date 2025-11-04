@@ -6,12 +6,7 @@ classoption:
   - openany
   - final
 
-# https://github.com/cplusplus/draft/blob/97b615a5a6ab0598b624ee05402c531d0421cff6/source/layout.tex#L4-L8
-geometry:
-  - left=2.245cm
-  - right=2.245cm
-  - top=2.5cm
-  - bottom=2.5cm
+institute: WG21
 
 block-headings: true
 link-citations: true
@@ -33,12 +28,6 @@ header-includes:
     % adjust quote indent
     \renewenvironment{quote}{\list{}{\leftmargin=0.2in}\item[]}{\endlist}
     \renewcommand{\CSLBlock}[1]{\hfill\break#1\hfill\break}
-
-    % https://github.com/cplusplus/draft/blob/97b615a5a6ab0598b624ee05402c531d0421cff6/source/styles.tex#L127-L133
-    \renewcommand{\labelitemi}{---}
-    \renewcommand{\labelitemii}{---}
-    \renewcommand{\labelitemiii}{---}
-    \renewcommand{\labelitemiv}{---}
 
     % https://github.com/cplusplus/draft/blob/97b615a5a6ab0598b624ee05402c531d0421cff6/source/layout.tex#L32-L68
     \makeatletter

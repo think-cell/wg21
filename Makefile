@@ -4,9 +4,11 @@ OUTDIR ?= generated
 DEFAULTS ?= $(wildcard $(SRCDIR)/defaults.yaml)
 METADATA ?= $(wildcard $(SRCDIR)/metadata.yaml)
 
-override SRC := $(filter-out %/LICENSE.md %/README.md, $(wildcard $(SRCDIR)/*.md))
+override PAPER_SRC := $(wildcard $(SRCDIR)/P*.md)
+override SLIDES_SRC := $(wildcard $(SRCDIR)/slides-*.md)
 
-override HTML := $(SRC:.md=.html)
+override PAPERS := $(PAPER_SRC:.md=.html)
+override SLIDES := $(SLIDES_SRC:.md=.pdf)
 
 override ROOTDIR := $(dir $(lastword $(MAKEFILE_LIST)))
 
@@ -34,14 +36,17 @@ $(eval $(and $(DEFAULTS), override DEPS += $(DEFAULTS)))
 $(eval $(and $(METADATA), override DEPS += $(METADATA)))
 
 .PHONY: all
-all: $(HTML)
+all: $(PAPERS) $(SLIDES)
 
 .PHONY: clean
 clean:
 	rm -rf $(DEPS) $(OUTDIR)
 
-.PHONY: $(HTML)
-$(HTML): $(SRCDIR)/%: $(OUTDIR)/%
+.PHONY: $(PAPERS)
+$(PAPERS): $(SRCDIR)/%: $(OUTDIR)/%
+
+.PHONY: $(SLIDES)
+$(SLIDES): $(SRCDIR)/%: $(OUTDIR)/%
 
 .PHONY: update
 update:
@@ -59,6 +64,9 @@ $(DATADIR)/csl.json: $(DATADIR)/refs.py
 $(DATADIR)/annex-f:
 	curl -sSL https://timsong-cpp.github.io/cppwp/annex-f -o $@
 
-$(OUTDIR)/%.html: $(SRCDIR)/%.md $(DEPS) | $(OUTDIR)
+$(OUTDIR)/P%.html: $(SRCDIR)/P%.md $(DEPS) | $(OUTDIR)
 	$(PANDOC) --bibliography $(DATADIR)/csl.json
+
+$(OUTDIR)/slides-%.pdf: $(SRCDIR)/slides-%.md $(DEPS) | $(OUTDIR)
+	$(PANDOC) -t beamer --bibliography $(DATADIR)/csl.json
 

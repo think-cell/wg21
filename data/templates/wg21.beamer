@@ -1,0 +1,433 @@
+\PassOptionsToPackage{unicode=true}{hyperref} % options for packages loaded elsewhere
+\PassOptionsToPackage{hyphens}{url}
+\PassOptionsToPackage{dvipsnames,svgnames*,x11names*,table}{xcolor}
+\documentclass[aspectratio=169]{beamer}
+
+\usepackage{qrcode}
+\usepackage{pgfpages}
+\setbeamertemplate{caption}[numbered]
+\setbeamertemplate{caption label separator}{: }
+\setbeamercolor{caption name}{fg=normal text.fg}
+
+% color
+\usecolortheme{whale}
+\definecolor{Text}{RGB}{8,8,8}
+\definecolor{Background}{RGB}{255,255,255}
+\definecolor{Accent}{RGB}{41,112,254}
+\definecolor{Highlight}{RGB}{232,21,59}
+\definecolor{Secondary}{RGB}{239,239,241}
+
+\colorlet{Accent1}{Accent}
+\definecolor{Accent2}{RGB}{25,186,153}
+\definecolor{Accent3}{RGB}{225,147,25}
+\colorlet{Accent4}{Highlight}
+\colorlet{Accent5}{Secondary}
+
+\usecolortheme[named=Accent]{structure}
+\setbeamercolor{normal text}{fg=Text}
+\setbeamercolor{frametitle}{fg=Text}
+\setbeamercolor{author in head/foot}{fg=Text,bg=Secondary}
+\setbeamercolor{title in head/foot}{fg=Text,bg=Secondary}
+\setbeamercolor{institute in head/foot}{fg=Text,bg=Secondary}
+\setbeamercolor{page number in head/foot}{fg=Background,bg=Highlight}
+\setbeamercolor{enumerate item}{fg=Text}
+
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows,arrows.meta,backgrounds,positioning,fit,overlay-beamer-styles,calc,math}
+\usepackage{fmtcount}
+
+\tikzstyle{flowblock}=[rectangle, draw, fill=Accent!70, text width=5em, text centered, rounded corners, minimum height=3em]
+\tikzstyle{flowline}=[draw,-latex']
+
+\usepackage{pgfplots}
+\pgfplotsset{compat=newest}
+\pgfplotsset{scaled x ticks=false}
+
+% font
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[$if(fontenc)$$fontenc$$else$T1$endif$]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provides euro and other symbols
+\else % if luatex or xelatex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+  \setmainfont{FreeSans}
+  \setmonofont[Mapping=tex-ansi]{JetBrains Mono NL}
+\fi
+
+\usefonttheme{serif}
+\setbeamerfont{block title}{family=\sffamily}
+\setbeamerfont{frametitle}{family=\sffamily,series=\bfseries}
+\setbeamerfont{section title}{family=\sffamily,series=\bfseries,size=\LARGE}
+\setbeamerfont{framesubtitle}{family=\sffamily}
+\setbeamerfont{headline}{family=\sffamily}
+\setbeamerfont{title page}{family=\sffamily}
+\setbeamerfont{titlelike}{family=\sffamily}
+\setbeamerfont{title}{family=\sffamily}
+\setbeamerfont{author}{size={\fontsize{10}{10}}}
+
+% theme
+\usetheme{Malmoe}
+\setbeamertemplate{logo}{}
+\setbeamertemplate{headline} {}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{footline}
+{
+  \leavevmode%
+  \hbox{%
+  \begin{beamercolorbox}[wd=.3\paperwidth,ht=2.25ex,dp=1ex,left]{author in head/foot}%
+    \hspace{1em}\usebeamerfont{author in head/foot}\insertshortauthor
+  \end{beamercolorbox}%
+  \begin{beamercolorbox}[wd=.35\paperwidth,ht=2.25ex,dp=1ex,center]{title in head/foot}%
+    \usebeamerfont{title in head/foot}\insertshorttitle
+  \end{beamercolorbox}%
+  \begin{beamercolorbox}[wd=.3\paperwidth,ht=2.25ex,dp=1ex,right]{institute in head/foot}%
+      \usebeamerfont{institute in head/foot}\insertshortinstitute\hspace{1em}\insertdate\hspace{1em}
+  \end{beamercolorbox}%
+  \begin{beamercolorbox}[wd=.05\paperwidth,ht=2.25ex,dp=1ex,center]{page number in head/foot}%
+    \usebeamerfont{page number in head/foot}\insertframenumber{}
+  \end{beamercolorbox}}%
+  \vskip0pt%
+}
+\setbeamertemplate{title page}
+{
+    \begin{beamercolorbox}[sep=12pt]{title}
+      \usebeamerfont{title}\inserttitle\par
+      \ifx\insertsubtitle\@empty%
+      \else%
+        \vskip0.25em%
+        {\usebeamerfont{subtitle}\usebeamercolor[fg]{subtitle}\insertsubtitle\par}%
+      \fi%
+      \vskip0.5em%
+      {\color{Text}\usebeamerfont{author in head/foot}\small\insertauthor\hspace{.5em}|\hspace{.5em}\insertinstitute\hspace{.5em}|\hspace{.5em}\insertdate}
+    \end{beamercolorbox}
+}
+\setbeamertemplate{part page}{}
+\setbeamertemplate{section page}{}
+\setbeamertemplate{subsection page}{}
+\setbeamertemplate{itemize item}{$$\textcolor{Black}{\bullet}$$}
+\setbeamertemplate{itemize subitem}{$$\textcolor{Black}{\bullet}$$}
+
+\newcommand\calltoaction[1]{
+    \textcolor{Highlight}{\textbf{\huge #1}}
+    {\color{Secondary}\rule{\textwidth}{1mm}}
+}
+\newcommand\heading[1]{
+    \begin{center}
+        \textcolor{Accent}{\textbf{\LARGE #1}}
+    \end{center}
+}
+\newcommand\subheading[1]{
+    \begin{center}
+        \textcolor{Accent}{\textbf{\large #1}}
+    \end{center}
+}
+\newcommand\inlineheading[2][Accent]{
+    \textcolor{#1}{\large #2}
+}
+
+\usepackage[absolute,overlay]{textpos}
+\newenvironment{floatblock}[1]
+    {
+        \begin{textblock*}{#1}(0.925\textwidth,0.093\textheight)
+        \begin{block}{\vspace*{-3ex}}
+        \begin{center}
+    }
+    {
+        \end{center}
+        \end{block}
+        \end{textblock*}
+    }
+
+\usepackage{scalerel}
+\newcommand\godbolt[1]{
+    \begin{floatblock}{25mm}
+        \scalerel*{\includegraphics{theme/godbolt.png}}{WW} \href{https://godbolt.org/z/#1}{#1}
+    \end{floatblock}
+}
+
+% Prevent slide breaks in the middle of a paragraph:
+\widowpenalties 1 10000
+\raggedbottom
+
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{%
+\usepackage[$for(microtypeoptions)$$microtypeoptions$$sep$,$endfor$]{microtype}
+\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+$if(indent)$
+$else$
+\IfFileExists{parskip.sty}{%
+\usepackage{parskip}
+}{% else
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+}
+$endif$
+$if(verbatim-in-note)$
+\usepackage{fancyvrb}
+$endif$
+$if(colorlinks)$
+\usepackage{xcolor}
+$endif$
+\usepackage{hyperref}
+\hypersetup{
+$if(title-meta)$
+            pdftitle={$title-meta$},
+$endif$
+$if(author-meta)$
+            pdfauthor={$author-meta$},
+$endif$
+$if(keywords)$
+            pdfkeywords={$for(keywords)$$keywords$$sep$, $endfor$},
+$endif$
+$if(colorlinks)$
+            colorlinks=true,
+            linkcolor=$if(linkcolor)$$linkcolor$$else$Maroon$endif$,
+            filecolor=$if(filecolor)$$filecolor$$else$Maroon$endif$,
+            citecolor=$if(citecolor)$$citecolor$$else$Blue$endif$,
+            urlcolor=$if(urlcolor)$$urlcolor$$else$Blue$endif$,
+$else$
+            pdfborder={0 0 0},
+$endif$
+            breaklinks=true}
+\urlstyle{same}  % don't use monospace font for urls
+$if(verbatim-in-note)$
+\VerbatimFootnotes % allows verbatim text in footnotes
+$endif$
+$if(geometry)$
+\usepackage[$for(geometry)$$geometry$$sep$,$endfor$]{geometry}
+$endif$
+$if(beamer)$
+\newif\ifbibliography
+$endif$
+$if(listings)$
+\usepackage{listings}
+\newcommand{\passthrough}[1]{#1}
+$endif$
+$if(lhs)$
+\lstnewenvironment{code}{\lstset{language=Haskell,basicstyle=\small\ttfamily}}{}
+$endif$
+$if(highlighting-macros)$
+$highlighting-macros$
+$endif$
+$if(tables)$
+\usepackage{longtable,booktabs}
+$if(beamer)$
+\usepackage{caption}
+% These lines are needed to make table captions work with longtable:
+\makeatletter
+\def\fnum@table{\tablename~\thetable}
+\makeatother
+$else$
+% Fix footnotes in tables (requires footnote package)
+\IfFileExists{footnote.sty}{\usepackage{footnote}\makesavenoteenv{longtable}}{}
+$endif$
+$endif$
+$if(graphics)$
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+$endif$
+$if(links-as-notes)$
+% Make links footnotes instead of hotlinks:
+\DeclareRobustCommand{\href}[2]{#2\footnote{\url{#1}}}
+$endif$
+$if(strikeout)$
+\usepackage[normalem]{ulem}
+% avoid problems with \sout in headers with hyperref:
+\pdfstringdefDisableCommands{\renewcommand{\sout}{}}
+$endif$
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+$if(numbersections)$
+\setcounter{secnumdepth}{$if(secnumdepth)$$secnumdepth$$else$5$endif$}
+$else$
+\setcounter{secnumdepth}{0}
+$endif$
+$if(beamer)$
+$else$
+$if(subparagraph)$
+$else$
+% Redefines (sub)paragraphs to behave more like sections
+\ifx\paragraph\undefined\else
+\let\oldparagraph\paragraph
+\renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+\let\oldsubparagraph\subparagraph
+\renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+$endif$
+$endif$
+$if(pagestyle)$
+\pagestyle{$pagestyle$}
+$endif$
+
+\newlength{\cslhangindent}
+\setlength{\cslhangindent}{1.5em}
+\newlength{\csllabelwidth}
+\setlength{\csllabelwidth}{3em}
+\newlength{\cslentryspacingunit} % times entry-spacing
+\setlength{\cslentryspacingunit}{\parskip}
+\newenvironment{CSLReferences}[2] % #1 hanging-ident, #2 entry spacing
+ {% don't indent paragraphs
+  \setlength{\parindent}{0pt}
+  % turn on hanging indent if param 1 is 1
+  \ifodd #1
+  \let\oldpar\par
+  \def\par{\hangindent=\cslhangindent\oldpar}
+  \fi
+  % set entry spacing
+  \setlength{\parskip}{#2\cslentryspacingunit}
+ }%
+ {}
+\usepackage{calc}
+\newcommand{\CSLBlock}[1]{#1\hfill\break}
+\newcommand{\CSLLeftMargin}[1]{\parbox[t]{\csllabelwidth}{#1}}
+\newcommand{\CSLRightInline}[1]{\parbox[t]{\linewidth - \csllabelwidth}{#1}\break}
+\newcommand{\CSLIndent}[1]{\hspace{\cslhangindent}#1}
+
+% set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+
+$for(header-includes)$
+$header-includes$
+$endfor$
+$if(lang)$
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[shorthands=off,$for(babel-otherlangs)$$babel-otherlangs$,$endfor$main=$babel-lang$]{babel}
+$if(babel-newcommands)$
+  $babel-newcommands$
+$endif$
+\else
+  % load polyglossia as late as possible as it *could* call bidi if RTL lang (e.g. Hebrew or Arabic)
+  \usepackage{polyglossia}
+  \setmainlanguage[$polyglossia-lang.options$]{$polyglossia-lang.name$}
+$for(polyglossia-otherlangs)$
+  \setotherlanguage[$polyglossia-otherlangs.options$]{$polyglossia-otherlangs.name$}
+$endfor$
+\fi
+$endif$
+$if(dir)$
+\ifxetex
+  % load bidi as late as possible as it modifies e.g. graphicx
+  \usepackage{bidi}
+\fi
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \TeXXeTstate=1
+  \newcommand{\RL}[1]{\beginR #1\endR}
+  \newcommand{\LR}[1]{\beginL #1\endL}
+  \newenvironment{RTL}{\beginR}{\endR}
+  \newenvironment{LTR}{\beginL}{\endL}
+\fi
+$endif$
+$if(natbib)$
+\usepackage[$natbiboptions$]{natbib}
+\bibliographystyle{$if(biblio-style)$$biblio-style$$else$plainnat$endif$}
+$endif$
+$if(biblatex)$
+\usepackage[$if(biblio-style)$style=$biblio-style$,$endif$$for(biblatexoptions)$$biblatexoptions$$sep$,$endfor$]{biblatex}
+$for(bibliography)$
+\addbibresource{$bibliography$}
+$endfor$
+$endif$
+
+$if(title)$
+\title{$title$$if(thanks)$\thanks{$thanks$}$endif$}
+$endif$
+$if(subtitle)$
+\providecommand{\subtitle}[1]{}
+\subtitle{$subtitle$}
+$endif$
+$if(author)$
+\author{$for(author)$$author$$sep$ \and $endfor$}
+$endif$
+$if(institute)$
+\providecommand{\institute}[1]{}
+\institute{$for(institute)$$institute$$sep$ \and $endfor$}
+$endif$
+\date{$date$}
+$if(beamer)$
+$if(titlegraphic)$
+\titlegraphic{\hspace*{-10mm}\includegraphics[height=\paperheight,width=\paperwidth]{$titlegraphic$}}
+$endif$
+$endif$
+
+\begin{document}
+
+$if(title)$
+
+$if(beamer)$
+\addtocounter{framenumber}{-1}
+\frame[plain]{\titlepage}
+$else$
+\maketitle
+$endif$
+
+$if(abstract)$
+\begin{abstract}
+$abstract$
+\end{abstract}
+$endif$
+
+$endif$
+
+$for(include-before)$
+$include-before$
+
+$endfor$
+
+$body$
+
+$if(natbib)$
+$if(bibliography)$
+$if(biblio-title)$
+$if(book-class)$
+\renewcommand\bibname{$biblio-title$}
+$else$
+\renewcommand\refname{$biblio-title$}
+$endif$
+$endif$
+$if(beamer)$
+\begin{frame}[allowframebreaks]{$biblio-title$}
+\bibliographytrue
+$endif$
+\bibliography{$for(bibliography)$$bibliography$$sep$,$endfor$}
+$if(beamer)$
+\end{frame}
+$endif$
+
+$endif$
+$endif$
+$if(biblatex)$
+$if(beamer)$
+\begin{frame}[allowframebreaks]{$biblio-title$}
+\bibliographytrue
+\printbibliography[heading=none]
+\end{frame}
+$else$
+\printbibliography$if(biblio-title)$[title=$biblio-title$]$endif$
+$endif$
+
+$endif$
+$for(include-after)$
+$include-after$
+
+$endfor$
+\end{document}
